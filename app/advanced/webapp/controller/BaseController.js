@@ -20,12 +20,14 @@ sap.ui.define([
       model.setProperty("/error", "");
 
       try {
-        const [orders, customers] = await Promise.all([
+        const [orders, customers, products] = await Promise.all([
           this.fetchJson("/api/o2c/SalesOrders?$orderby=orderDate desc"),
-          this.fetchJson("/api/o2c/Customers?$orderby=name")
+          this.fetchJson("/api/o2c/Customers?$orderby=name"),
+          this.fetchJson("/api/o2c/Products?$orderby=productCode")
         ]);
         model.setProperty("/orders", orders.value || []);
         model.setProperty("/customers", customers.value || []);
+        model.setProperty("/products", products.value || []);
       } catch (error) {
         model.setProperty("/error", error.message || "Unable to load O2C data");
       } finally {

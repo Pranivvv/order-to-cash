@@ -8,7 +8,9 @@
     "watch": "cds-watch",
     "deploy": "cds-deploy",
     "test:service": "node test/o2c-service.test.js",
-    "test:flow": "node test/o2c-flow.test.js"
+    "test:flow": "node test/o2c-flow.test.js",
+    "test:validation": "node test/o2c-validation.test.js",
+    "test:inventory": "node test/o2c-inventory.test.js"
   },
   "dependencies": {
     "@cap-js/sqlite": "^2",

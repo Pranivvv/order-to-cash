@@ -31,8 +31,17 @@ sap.ui.define([
 
     createDialogDefaults: function () {
       const customers = this.getViewModel().getProperty("/customers") || [];
+      const products = this.getViewModel().getProperty("/products") || [];
+      const product = products[0] || {};
+
       return {
         customerId: customers[0]?.ID || "",
+        productId: product.ID || "",
+        quantity: 1,
+        discount: 0,
+        unitPrice: Number(product.unitPrice || 0),
+        availableStock: Number(product.stockQuantity || 0),
+        lineTotal: Number(product.unitPrice || 0),
         deliveryDate: "",
         notes: "",
         currency: "USD"
@@ -47,8 +56,28 @@ sap.ui.define([
         return;
       }
 
+      if (!data.productId) {
+        MessageToast.show("Select a product first");
+        return;
+      }
+
+      if (!Number(data.quantity) || Number(data.quantity) <= 0) {
+        MessageToast.show("Enter a quantity greater than zero");
+        return;
+      }
+
+      if (Number(data.quantity) > Number(data.availableStock)) {
+        MessageToast.show("Quantity exceeds available stock");
+        return;
+      }
+
+      if (Number(data.discount || 0) < 0 || Number(data.discount || 0) > 100) {
+        MessageToast.show("Discount must be between 0 and 100");
+        return;
+      }
+
       try {
-        await this.fetchJson("/api/o2c/SalesOrders", {
+        const created = await this.fetchJson("/api/o2c/SalesOrders", {
           method: "POST",
           body: JSON.stringify({
             customer_ID: data.customerId,
@@ -57,6 +86,19 @@ sap.ui.define([
             currency: data.currency
           })
         });
+
+        if (data.productId && Number(data.quantity) > 0) {
+          await this.fetchJson("/api/o2c/SalesOrderItems", {
+            method: "POST",
+            body: JSON.stringify({
+              order_ID: created.ID,
+              product_ID: data.productId,
+              quantity: Number(data.quantity),
+              discount: Number(data.discount || 0)
+            })
+          });
+        }
+
         this._createDialog.close();
         MessageToast.show("Sales order created");
         this.loadOrders();
@@ -67,6 +109,43 @@ sap.ui.define([
 
     onCreateOrderCancel: function () {
       this._createDialog.close();
+    },
+
+    onProductChange: function () {
+      const dialogModel = this._createDialog.getModel("dialog");
+      const product = this.findSelectedProduct(dialogModel.getProperty("/productId"));
+
+      dialogModel.setProperty("/unitPrice", Number(product?.unitPrice || 0));
+      dialogModel.setProperty("/availableStock", Number(product?.stockQuantity || 0));
+      this.updateLineTotal();
+    },
+
+    onOrderItemInputChange: function (event) {
+      const source = event.getSource();
+      const binding = source.getBinding("value");
+
+      if (binding) {
+        this._createDialog.getModel("dialog").setProperty(binding.getPath(), source.getValue());
+      }
+
+      this.updateLineTotal();
+    },
+
+    findSelectedProduct: function (productId) {
+      const products = this.getViewModel().getProperty("/products") || [];
+      return products.find(function (product) {
+        return product.ID === productId;
+      });
+    },
+
+    updateLineTotal: function () {
+      const dialogModel = this._createDialog.getModel("dialog");
+      const quantity = Number(dialogModel.getProperty("/quantity") || 0);
+      const unitPrice = Number(dialogModel.getProperty("/unitPrice") || 0);
+      const discount = Number(dialogModel.getProperty("/discount") || 0);
+      const lineTotal = quantity * unitPrice * (1 - discount / 100);
+
+      dialogModel.setProperty("/lineTotal", Number(lineTotal.toFixed(2)));
     },
 
     onOpenFilter: async function () {

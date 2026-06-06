@@ -25,6 +25,37 @@
             valueFormat="yyyy-MM-dd"
             displayFormat="medium" />
 
+          <Label text="Product" required="true" />
+          <Select
+            selectedKey="{dialog>/productId}"
+            change="onProductChange"
+            items="{view>/products}">
+            <core:Item key="{view>ID}" text="{view>productCode} - {view>description}" />
+          </Select>
+
+          <Label text="Quantity" required="true" />
+          <Input
+            value="{dialog>/quantity}"
+            type="Number"
+            liveChange="onOrderItemInputChange"
+            change="onOrderItemInputChange" />
+
+          <Label text="Discount %" />
+          <Input
+            value="{dialog>/discount}"
+            type="Number"
+            liveChange="onOrderItemInputChange"
+            change="onOrderItemInputChange" />
+
+          <Label text="Available Stock" />
+          <Text text="{dialog>/availableStock}" />
+
+          <Label text="Unit Price" />
+          <Text text="{dialog>/unitPrice} {dialog>/currency}" />
+
+          <Label text="Order Amount Preview" />
+          <Text text="{dialog>/lineTotal} {dialog>/currency}" />
+
           <Label text="Notes" />
           <TextArea
             value="{dialog>/notes}"

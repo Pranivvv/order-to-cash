@@ -15,6 +15,7 @@ sap.ui.define([
       this.setModel(new JSONModel({
         orders: [],
         customers: [],
+        products: [],
         selectedOrder: null,
         statusFilters: [],
         busy: false,

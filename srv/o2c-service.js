@@ -14,6 +14,12 @@ module.exports = cds.service.impl(async function () {
   const { Customers, Products, SalesOrders, SalesOrderItems, Invoices, Payments } = this.entities;
 
   this.before('CREATE', SalesOrders, async (req) => {
+    if (!req.data.customer_ID) return req.error(400, 'Customer is required');
+
+    const customer = await SELECT.one.from(Customers).where({ ID: req.data.customer_ID });
+    if (!customer) return req.error(400, 'Customer not found');
+    if (customer.blocked) return req.error(400, 'Cannot create sales order for blocked customer');
+
     if (!req.data.orderNumber) {
       const result = await SELECT.one`count(*) as cnt`.from(SalesOrders);
       req.data.orderNumber = `SO-${new Date().getFullYear()}-${String(Number(result.cnt) + 1).padStart(5, '0')}`;
@@ -26,10 +32,22 @@ module.exports = cds.service.impl(async function () {
   });
 
   this.before('CREATE', SalesOrderItems, async (req) => {
+    if (!req.data.order_ID) return req.error(400, 'Sales order is required');
     if (!req.data.product_ID) return;
+
+    const order = await SELECT.one.from(SalesOrders).where({ ID: req.data.order_ID });
+    if (!order) return req.error(400, 'Sales order not found');
+    if (order.status !== 'Draft') return req.error(400, `Cannot change items for order in status ${order.status}`);
 
     const product = await SELECT.one.from(Products).where({ ID: req.data.product_ID });
     if (!product) return req.error(400, 'Product not found');
+
+    const itemError = validateItemValues(req.data);
+    if (itemError) return req.error(400, itemError);
+
+    if (Number(product.stockQuantity || 0) < Number(req.data.quantity || 0)) {
+      return req.error(400, 'Requested quantity exceeds available stock');
+    }
 
     req.data.unitPrice ??= product.unitPrice;
     req.data.discount ??= 0;
@@ -42,8 +60,22 @@ module.exports = cds.service.impl(async function () {
     calculateLineTotal(req.data);
   });
 
-  this.before('UPDATE', SalesOrderItems, (req) => {
-    calculateLineTotal(req.data);
+  this.before('UPDATE', SalesOrderItems, async (req) => {
+    const itemID = getId(req);
+    const existing = itemID && await SELECT.one.from(SalesOrderItems).where({ ID: itemID });
+    const orderID = req.data.order_ID || existing?.order_ID;
+
+    if (orderID) {
+      const order = await SELECT.one.from(SalesOrders).where({ ID: orderID });
+      if (order && order.status !== 'Draft') return req.error(400, `Cannot change items for order in status ${order.status}`);
+    }
+
+    const data = { ...existing, ...req.data };
+    const itemError = validateItemValues(data);
+    if (itemError) return req.error(400, itemError);
+
+    calculateLineTotal(data);
+    if (data.lineTotal !== undefined) req.data.lineTotal = data.lineTotal;
   });
 
   this.after(['CREATE', 'UPDATE'], SalesOrderItems, async (item, req) => {
@@ -70,6 +102,11 @@ module.exports = cds.service.impl(async function () {
     if (!order) return req.error(404, 'Order not found');
     if (order.status !== 'Draft') return req.error(400, `Cannot submit order in status ${order.status}`);
 
+    const readyError = await validateOrderReadyForProcessing(SalesOrderItems, SalesOrders, Products, order);
+    if (readyError) return req.error(400, readyError);
+
+    await adjustStockForOrder(SalesOrderItems, Products, ID, -1);
+
     await UPDATE(SalesOrders).set({ status: 'Submitted' }).where({ ID });
     return SELECT.one.from(SalesOrders).where({ ID });
   });
@@ -82,6 +119,13 @@ module.exports = cds.service.impl(async function () {
       return req.error(400, `Cannot approve order in status ${order.status}`);
     }
 
+    if (order.status === 'Draft') {
+      const readyError = await validateOrderReadyForProcessing(SalesOrderItems, SalesOrders, Products, order);
+      if (readyError) return req.error(400, readyError);
+
+      await adjustStockForOrder(SalesOrderItems, Products, ID, -1);
+    }
+
     await UPDATE(SalesOrders).set({ status: 'Approved' }).where({ ID });
     return SELECT.one.from(SalesOrders).where({ ID });
   });
@@ -90,6 +134,13 @@ module.exports = cds.service.impl(async function () {
     const ID = getId(req);
     const order = await SELECT.one.from(SalesOrders).where({ ID });
     if (!order) return req.error(404, 'Order not found');
+    if (['Invoiced', 'Paid'].includes(order.status)) {
+      return req.error(400, `Cannot reject order in status ${order.status}`);
+    }
+
+    if (['Submitted', 'Approved'].includes(order.status)) {
+      await adjustStockForOrder(SalesOrderItems, Products, ID, 1);
+    }
 
     await UPDATE(SalesOrders).set({
       status: 'Rejected',
@@ -107,6 +158,10 @@ module.exports = cds.service.impl(async function () {
       return req.error(400, `Cannot cancel order in status ${order.status}`);
     }
 
+    if (['Submitted', 'Approved'].includes(order.status)) {
+      await adjustStockForOrder(SalesOrderItems, Products, ID, 1);
+    }
+
     await UPDATE(SalesOrders).set({ status: 'Cancelled' }).where({ ID });
     return SELECT.one.from(SalesOrders).where({ ID });
   });
@@ -116,6 +171,7 @@ module.exports = cds.service.impl(async function () {
     const order = await SELECT.one.from(SalesOrders).where({ ID });
     if (!order) return req.error(404, 'Order not found');
     if (order.status !== 'Approved') return req.error(400, 'Only approved orders can be invoiced');
+    if (Number(order.totalAmount || 0) <= 0) return req.error(400, 'Only orders with a positive total can be invoiced');
 
     const existing = await SELECT.one.from(Invoices).where({ salesOrder_ID: ID });
     if (existing) return existing;
@@ -150,13 +206,19 @@ module.exports = cds.service.impl(async function () {
 
     const amount = Number(req.data.amount);
     if (!amount || amount <= 0) return req.error(400, 'Payment amount must be greater than zero');
+    if (['Paid', 'Cancelled'].includes(invoice.status)) return req.error(400, `Cannot record payment for invoice in status ${invoice.status}`);
+
+    const existingPayments = await SELECT.from(Payments).where({ invoice_ID: ID });
+    const alreadyPaid = existingPayments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+    const openAmount = Number(invoice.totalAmount || 0) - alreadyPaid;
+    if (amount > openAmount) return req.error(400, 'Payment amount exceeds open invoice amount');
 
     await INSERT.into(Payments).entries({
       ID: cds.utils.uuid(),
       invoice_ID: ID,
       paymentDate: today(),
       amount,
-      method: req.data.method,
+      method: req.data.method || 'Manual',
       reference: req.data.reference
     });
 
@@ -205,8 +267,49 @@ function calculateLineTotal(data) {
   data.lineTotal = Number((quantity * unitPrice * (1 - discount / 100)).toFixed(2));
 }
 
+function validateItemValues(data) {
+  const quantity = Number(data.quantity);
+  const discount = Number(data.discount || 0);
+  const unitPrice = data.unitPrice === undefined ? undefined : Number(data.unitPrice);
+
+  if (!quantity || quantity <= 0) return 'Sales order item quantity must be greater than zero';
+  if (discount < 0 || discount > 100) return 'Sales order item discount must be between 0 and 100';
+  if (unitPrice !== undefined && unitPrice < 0) return 'Sales order item unit price cannot be negative';
+
+  return undefined;
+}
+
 async function updateOrderTotal(SalesOrderItems, SalesOrders, orderID) {
   const items = await SELECT.from(SalesOrderItems).where({ order_ID: orderID });
   const totalAmount = items.reduce((sum, item) => sum + Number(item.lineTotal || 0), 0);
   await UPDATE(SalesOrders).set({ totalAmount }).where({ ID: orderID });
+}
+
+async function validateOrderReadyForProcessing(SalesOrderItems, SalesOrders, Products, order) {
+  const items = await SELECT.from(SalesOrderItems).where({ order_ID: order.ID });
+  if (!items.length) return 'Sales order must have at least one item before submission';
+  if (Number(order.totalAmount || 0) <= 0) return 'Sales order total must be greater than zero';
+
+  for (const item of items) {
+    const product = await SELECT.one.from(Products).where({ ID: item.product_ID });
+    if (!product) return `Product ${item.product_ID} not found`;
+    if (Number(product.stockQuantity || 0) < Number(item.quantity || 0)) {
+      return `Requested quantity exceeds available stock for ${product.productCode}`;
+    }
+  }
+
+  const persisted = await SELECT.one.from(SalesOrders).where({ ID: order.ID });
+  if (!persisted) return 'Sales order not found';
+
+  return undefined;
+}
+
+async function adjustStockForOrder(SalesOrderItems, Products, orderID, direction) {
+  const items = await SELECT.from(SalesOrderItems).where({ order_ID: orderID });
+
+  for (const item of items) {
+    const product = await SELECT.one.from(Products).where({ ID: item.product_ID });
+    const stockQuantity = Number(product.stockQuantity || 0) + direction * Number(item.quantity || 0);
+    await UPDATE(Products).set({ stockQuantity }).where({ ID: item.product_ID });
+  }
 }

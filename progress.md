@@ -173,3 +173,87 @@ Deferred:
 - Finance-specific role checks.
 - Partial-payment balance calculation in the UI.
 - Browser automation for clicking through the payment dialog.
+
+## Phase 7 - Business Validation And Negative-Path Tests
+
+Status: Complete
+
+Completed:
+- Added customer validation when creating sales orders.
+- Prevented creating sales orders for blocked customers.
+- Prevented submitting empty or zero-total sales orders.
+- Added sales order item validation for missing order, missing product, invalid quantity, invalid discount, negative unit price, and insufficient stock.
+- Prevented item changes after the sales order leaves Draft status.
+- Prevented invoicing approved orders with a zero total.
+- Prevented payments against Paid or Cancelled invoices.
+- Prevented overpayments beyond the remaining open invoice amount.
+- Added default payment method fallback for manual payments.
+- Added `test/o2c-validation.test.js` for negative-path validation coverage.
+- Added `npm run test:validation` script.
+
+Verified:
+- `node --check srv/o2c-service.js` passes.
+- `node --check test/o2c-validation.test.js` passes.
+- `npm run test:validation` passes.
+- `npm run test:flow` passes.
+- `npm run test:service` passes.
+
+Deferred:
+- Browser automation for validating UI error messages.
+- Stock deduction/reservation during order approval or invoicing.
+- Security and role restrictions.
+
+## Phase 8 - Inventory Reservation
+
+Status: Complete
+
+Completed:
+- Added stock reservation when a Draft order is submitted.
+- Added stock reservation when a Draft order is approved directly.
+- Kept reserved stock consumed once an order is invoiced.
+- Released reserved stock when Submitted or Approved orders are rejected.
+- Released reserved stock when Submitted or Approved orders are cancelled.
+- Prevented reject after Invoiced or Paid status to avoid releasing consumed stock incorrectly.
+- Added `test/o2c-inventory.test.js` for stock reservation, release, and post-invoice protection.
+- Added `npm run test:inventory` script.
+
+Verified:
+- `node --check srv/o2c-service.js` passes.
+- `node --check test/o2c-inventory.test.js` passes.
+- `npm run test:inventory` passes.
+- `npm run test:validation` passes.
+- `npm run test:service` passes.
+- `npm run test:flow` passes.
+
+Deferred:
+- Dedicated inventory movement ledger.
+- Product-level stock adjustment UI.
+- Concurrent stock locking for high-volume production scenarios.
+- Security and role restrictions.
+
+## Phase 9 - Stock-Aware Draft Order UI
+
+Status: Complete
+
+Completed:
+- Added Products loading to the Advanced UI shared view model.
+- Added `Product Stock` table to the Advanced UI main screen.
+- Extended the Create Order dialog with product selection, quantity, discount, available stock, unit price, and order amount preview.
+- Updated Create Order logic to create the draft sales order and its first sales order item in one UI flow.
+- Added client-side validation for missing product, invalid quantity, quantity above stock, and invalid discount.
+- Updated the local cockpit Advanced UI link to use the Phase 9 cache key.
+- Updated `docs/user-flow.md` with stock-aware draft creation steps.
+
+Verified:
+- `node --check app/advanced/webapp/controller/Main.controller.js` passes.
+- `node --check app/advanced/webapp/controller/BaseController.js` passes.
+- Advanced manifest and project `package.json` parse as valid JSON.
+- `npm run test:inventory` passes.
+- `npm run test:flow` passes.
+- CAP returns HTTP 200 for Advanced UI HTML, main view, create-order fragment, main controller, and Products stock endpoint.
+
+Deferred:
+- Multi-line item entry in the create dialog.
+- Add-item action from the order detail page for existing Draft orders.
+- Product-level stock adjustment UI.
+- Security and role restrictions.

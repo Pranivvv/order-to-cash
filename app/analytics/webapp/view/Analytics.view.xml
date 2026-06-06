@@ -1,0 +1,75 @@
+<mvc:View
+  controllerName="o2c.analytics.controller.Analytics"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:viz="sap.viz.ui5.controls"
+  xmlns:feeds="sap.viz.ui5.controls.common.feeds"
+  xmlns:vizData="sap.viz.ui5.data"
+  xmlns:l="sap.ui.layout"
+  displayBlock="true">
+  <Page title="{i18n>analyticsTitle}" showNavButton="true" navButtonPress="onNavBack" class="o2cAnalyticsPage">
+    <headerContent>
+      <Button text="{i18n>refresh}" icon="sap-icon://refresh" press="onRefresh" />
+    </headerContent>
+    <content>
+      <MessageStrip
+        text="{analytics>/error}"
+        type="Error"
+        showIcon="true"
+        visible="{= !!${analytics>/error} }"
+        class="sapUiSmallMargin" />
+
+      <l:Grid defaultSpan="XL6 L6 M12 S12" hSpacing="1" vSpacing="1" class="sapUiSmallMargin">
+        <Panel headerText="{i18n>monthlyRevenue}" class="sapUiResponsiveMargin">
+          <viz:Popover id="revenuePopover" />
+          <viz:VizFrame
+            id="revenueChart"
+            width="100%"
+            height="360px"
+            vizType="bar"
+            uiConfig="{applicationSet:'fiori'}">
+            <viz:dataset>
+              <vizData:FlattenedDataset data="{analytics>/monthlyRevenue}">
+                <vizData:dimensions>
+                  <vizData:DimensionDefinition name="Month" value="{analytics>month}" />
+                </vizData:dimensions>
+                <vizData:measures>
+                  <vizData:MeasureDefinition name="Revenue" value="{analytics>revenue}" />
+                </vizData:measures>
+              </vizData:FlattenedDataset>
+            </viz:dataset>
+            <viz:feeds>
+              <feeds:FeedItem uid="valueAxis" type="Measure" values="Revenue" />
+              <feeds:FeedItem uid="categoryAxis" type="Dimension" values="Month" />
+            </viz:feeds>
+          </viz:VizFrame>
+        </Panel>
+
+        <Panel headerText="{i18n>statusDistribution}" class="sapUiResponsiveMargin">
+          <viz:Popover id="statusPopover" />
+          <viz:VizFrame
+            id="statusChart"
+            width="100%"
+            height="360px"
+            vizType="donut"
+            uiConfig="{applicationSet:'fiori'}">
+            <viz:dataset>
+              <vizData:FlattenedDataset data="{analytics>/statusData}">
+                <vizData:dimensions>
+                  <vizData:DimensionDefinition name="Status" value="{analytics>status}" />
+                </vizData:dimensions>
+                <vizData:measures>
+                  <vizData:MeasureDefinition name="Orders" value="{analytics>orderCount}" />
+                </vizData:measures>
+              </vizData:FlattenedDataset>
+            </viz:dataset>
+            <viz:feeds>
+              <feeds:FeedItem uid="size" type="Measure" values="Orders" />
+              <feeds:FeedItem uid="color" type="Dimension" values="Status" />
+            </viz:feeds>
+          </viz:VizFrame>
+        </Panel>
+      </l:Grid>
+    </content>
+  </Page>
+</mvc:View>

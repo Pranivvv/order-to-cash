@@ -1,0 +1,101 @@
+<mvc:View
+  controllerName="o2c.analytics.controller.Overview"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:l="sap.ui.layout"
+  displayBlock="true">
+  <Page title="{i18n>overviewTitle}" class="o2cAnalyticsPage">
+    <headerContent>
+      <Button text="{i18n>refresh}" icon="sap-icon://refresh" press="onRefresh" />
+      <Button text="{i18n>viewCharts}" type="Emphasized" icon="sap-icon://business-objects-experience" press="onShowAnalytics" />
+    </headerContent>
+    <content>
+      <MessageStrip
+        text="{analytics>/error}"
+        type="Error"
+        showIcon="true"
+        visible="{= !!${analytics>/error} }"
+        class="sapUiSmallMargin" />
+
+      <l:Grid defaultSpan="XL3 L3 M6 S12" hSpacing="1" vSpacing="1" class="sapUiSmallMargin">
+        <GenericTile header="{i18n>totalRevenue}" subheader="USD in thousands" class="o2cTile">
+          <tileContent>
+            <TileContent unit="USD">
+              <content>
+                <NumericContent value="{analytics>/totalRevenueDisplay}" scale="K" valueColor="Good" icon="sap-icon://money-bills" />
+              </content>
+            </TileContent>
+          </tileContent>
+        </GenericTile>
+
+        <GenericTile header="{i18n>openOrders}" subheader="Submitted" class="o2cTile">
+          <tileContent>
+            <TileContent>
+              <content>
+                <NumericContent value="{analytics>/openOrders}" valueColor="Critical" icon="sap-icon://pending" />
+              </content>
+            </TileContent>
+          </tileContent>
+        </GenericTile>
+
+        <GenericTile header="{i18n>invoiced}" subheader="Awaiting payment" class="o2cTile">
+          <tileContent>
+            <TileContent>
+              <content>
+                <NumericContent value="{analytics>/invoicedOrders}" valueColor="Neutral" icon="sap-icon://document" />
+              </content>
+            </TileContent>
+          </tileContent>
+        </GenericTile>
+
+        <GenericTile header="{i18n>paid}" subheader="Collected" class="o2cTile">
+          <tileContent>
+            <TileContent>
+              <content>
+                <NumericContent value="{analytics>/paidOrders}" valueColor="Good" icon="sap-icon://payment-approval" />
+              </content>
+            </TileContent>
+          </tileContent>
+        </GenericTile>
+      </l:Grid>
+
+      <l:Grid defaultSpan="XL6 L6 M12 S12" hSpacing="1" vSpacing="1" class="sapUiSmallMargin">
+        <Panel headerText="{i18n>recentOrders}" class="sapUiResponsiveMargin">
+          <Table items="{analytics>/recentOrders}" noDataText="No orders found">
+            <columns>
+              <Column><Text text="Order #" /></Column>
+              <Column><Text text="Customer" /></Column>
+              <Column hAlign="End"><Text text="Total" /></Column>
+              <Column><Text text="Status" /></Column>
+            </columns>
+            <items>
+              <ColumnListItem>
+                <cells>
+                  <ObjectIdentifier title="{analytics>orderNumber}" />
+                  <Text text="{analytics>customerName}" />
+                  <ObjectNumber number="{analytics>totalAmount}" unit="{analytics>currency}" />
+                  <ObjectStatus text="{analytics>status}" state="{path: 'analytics>status', formatter: '.statusState'}" />
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </Panel>
+
+        <Panel headerText="{i18n>topCustomers}" class="sapUiResponsiveMargin">
+          <List items="{analytics>/topCustomers}" noDataText="No customers found">
+            <ObjectListItem
+              title="{analytics>name}"
+              number="{analytics>creditLimit}"
+              numberUnit="USD"
+              intro="{analytics>customerNumber}">
+              <attributes>
+                <ObjectAttribute title="Country" text="{analytics>country}" />
+                <ObjectAttribute title="Email" text="{analytics>email}" />
+              </attributes>
+            </ObjectListItem>
+          </List>
+        </Panel>
+      </l:Grid>
+    </content>
+  </Page>
+</mvc:View>

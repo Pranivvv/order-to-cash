@@ -1,0 +1,12 @@
+{
+  "name": "o2c-analytics",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SAPUI5 analytics app for the O2C CAP service",
+  "scripts": {
+    "start": "ui5 serve --open index.html"
+  },
+  "devDependencies": {
+    "@ui5/cli": "^4"
+  }
+}

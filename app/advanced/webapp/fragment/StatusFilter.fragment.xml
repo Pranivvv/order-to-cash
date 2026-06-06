@@ -1,0 +1,28 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+  <ViewSettingsDialog
+    id="statusFilterDialog"
+    confirm="onFilterConfirm"
+    reset="onFilterReset">
+    <filterItems>
+      <ViewSettingsFilterItem key="status" text="Status" multiSelect="true">
+        <items>
+          <ViewSettingsItem key="Draft" text="Draft" />
+          <ViewSettingsItem key="Submitted" text="Submitted" />
+          <ViewSettingsItem key="Approved" text="Approved" />
+          <ViewSettingsItem key="Rejected" text="Rejected" />
+          <ViewSettingsItem key="InDelivery" text="In Delivery" />
+          <ViewSettingsItem key="Invoiced" text="Invoiced" />
+          <ViewSettingsItem key="Paid" text="Paid" />
+          <ViewSettingsItem key="Cancelled" text="Cancelled" />
+        </items>
+      </ViewSettingsFilterItem>
+    </filterItems>
+    <sortItems>
+      <ViewSettingsItem key="orderDate" text="Order Date" selected="true" />
+      <ViewSettingsItem key="totalAmount" text="Total Amount" />
+      <ViewSettingsItem key="customerName" text="Customer" />
+    </sortItems>
+  </ViewSettingsDialog>
+</core:FragmentDefinition>

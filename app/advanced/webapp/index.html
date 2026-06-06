@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Sales Orders</title>
+    <title>O2C Advanced UI</title>
     <style>
       html,
       body,
@@ -14,25 +14,21 @@
       id="sap-ui-bootstrap"
       src="https://ui5.sap.com/resources/sap-ui-core.js"
       data-sap-ui-theme="sap_horizon"
-      data-sap-ui-libs="sap.m,sap.fe.core,sap.fe.templates"
+      data-sap-ui-libs="sap.m,sap.ui.layout,sap.ui.core"
       data-sap-ui-compat-version="edge"
       data-sap-ui-async="true"
       data-sap-ui-frame-options="trusted"
-      data-sap-ui-xx-component-preload="off"
       data-sap-ui-on-init="module:sap/ui/core/ComponentSupport"
-      data-sap-ui-resource-roots='{"o2c.salesorders": "./"}'>
+      data-sap-ui-resource-roots='{"o2c.advanced": "./", "o2c.lib": "./library"}'>
     </script>
   </head>
   <body class="sapUiBody sapUiSizeCompact">
     <div
       data-sap-ui-component
-      data-name="o2c.salesorders"
+      data-name="o2c.advanced"
       data-id="container"
       data-height="100%"
-      data-settings='{"id":"o2c.salesorders"}'>
-      <div style="padding: 1rem; font-family: Arial, sans-serif;">
-        Loading O2C Sales Orders...
-      </div>
+      data-settings='{"id":"o2c.advanced"}'>
     </div>
   </body>
 </html>

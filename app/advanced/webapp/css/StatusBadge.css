@@ -1,0 +1,20 @@
+.o2cStatusBadge {
+  align-items: center;
+  border: 0;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 600;
+  gap: 0.25rem;
+  padding: 0.2rem 0.55rem;
+}
+
+.o2cStatusBadge--draft { background: #f0f0f0; color: #4f4f4f; }
+.o2cStatusBadge--submitted { background: #d8eafd; color: #064b8d; }
+.o2cStatusBadge--approved { background: #d8f0df; color: #176b34; }
+.o2cStatusBadge--rejected { background: #f8d7da; color: #842029; }
+.o2cStatusBadge--delivery { background: #fff3cd; color: #7a5b00; }
+.o2cStatusBadge--invoiced { background: #e7e9ec; color: #343a40; }
+.o2cStatusBadge--paid { background: #cdebd6; color: #155724; }
+.o2cStatusBadge--cancelled { background: #f3c2c8; color: #5f1721; }

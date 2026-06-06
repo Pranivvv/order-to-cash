@@ -1,0 +1,24 @@
+<mvc:View
+  controllerName="o2c.advanced.controller.Detail"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:o2c="o2c.advanced.control"
+  displayBlock="true">
+  <Page title="{i18n>detailTitle}" showNavButton="true" navButtonPress="onNavBack">
+    <content>
+      <o2c:OrderSummaryCard
+        class="sapUiSmallMargin"
+        orderNumber="{view>/selectedOrder/orderNumber}"
+        customerName="{view>/selectedOrder/customerName}"
+        totalAmount="{view>/selectedOrder/totalAmount}"
+        currency="{view>/selectedOrder/currency}"
+        status="{view>/selectedOrder/status}"
+        orderDate="{view>/selectedOrder/orderDate}"
+        salesRep="{view>/selectedOrder/salesRep}" />
+
+      <Panel headerText="Notes" class="sapUiSmallMargin">
+        <Text text="{view>/selectedOrder/notes}" />
+      </Panel>
+    </content>
+  </Page>
+</mvc:View>

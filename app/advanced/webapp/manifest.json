@@ -1,0 +1,88 @@
+{
+  "_version": "1.59.0",
+  "sap.app": {
+    "id": "o2c.advanced",
+    "type": "application",
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "applicationVersion": {
+      "version": "1.0.0"
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    },
+    "icons": {
+      "icon": "sap-icon://customize"
+    }
+  },
+  "sap.ui5": {
+    "rootView": {
+      "viewName": "o2c.advanced.view.App",
+      "type": "XML",
+      "async": true,
+      "id": "app"
+    },
+    "dependencies": {
+      "minUI5Version": "1.120.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.ui.layout": {}
+      }
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "uri": "i18n/i18n.properties"
+      }
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "viewPath": "o2c.advanced.view",
+        "controlId": "app",
+        "controlAggregation": "pages",
+        "async": true
+      },
+      "routes": [
+        {
+          "pattern": "",
+          "name": "Main",
+          "target": "Main"
+        },
+        {
+          "pattern": "orders/{orderId}",
+          "name": "Detail",
+          "target": "Detail"
+        }
+      ],
+      "targets": {
+        "Main": {
+          "viewName": "Main",
+          "viewId": "Main"
+        },
+        "Detail": {
+          "viewName": "Detail",
+          "viewId": "Detail"
+        }
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/StatusBadge.css"
+        }
+      ]
+    }
+  }
+}

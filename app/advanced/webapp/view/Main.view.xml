@@ -1,0 +1,49 @@
+<mvc:View
+  controllerName="o2c.advanced.controller.Main"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:o2c="o2c.advanced.control"
+  displayBlock="true">
+  <Page title="{i18n>mainTitle}" busy="{view>/busy}">
+    <headerContent>
+      <Button text="{i18n>createOrder}" type="Emphasized" icon="sap-icon://add" press="onOpenCreateDialog" />
+      <Button text="{i18n>filter}" icon="sap-icon://filter" press="onOpenFilter" />
+      <Button text="{i18n>refresh}" icon="sap-icon://refresh" press="onRefresh" />
+    </headerContent>
+    <content>
+      <MessageStrip
+        text="{view>/error}"
+        type="Error"
+        showIcon="true"
+        visible="{= !!${view>/error} }"
+        class="sapUiSmallMargin" />
+
+      <o2c:ExtendedTable
+        id="ordersTable"
+        items="{view>/orders}"
+        mode="SingleSelectMaster"
+        itemPress="onOrderPress"
+        refreshPress="onRefresh"
+        exportPress="onExport">
+        <o2c:columns>
+          <Column><Text text="Order #" /></Column>
+          <Column><Text text="Customer" /></Column>
+          <Column><Text text="Date" /></Column>
+          <Column hAlign="End"><Text text="Total" /></Column>
+          <Column><Text text="Status" /></Column>
+        </o2c:columns>
+        <o2c:items>
+          <ColumnListItem type="Navigation" press="onOrderPress">
+            <cells>
+              <ObjectIdentifier title="{view>orderNumber}" />
+              <Text text="{view>customerName}" />
+              <Text text="{view>orderDate}" />
+              <ObjectNumber number="{view>totalAmount}" unit="{view>currency}" />
+              <o2c:StatusBadge status="{view>status}" press="onStatusPress" />
+            </cells>
+          </ColumnListItem>
+        </o2c:items>
+      </o2c:ExtendedTable>
+    </content>
+  </Page>
+</mvc:View>

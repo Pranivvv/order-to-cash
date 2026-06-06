@@ -1,0 +1,20 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+  <VBox class="sapUiSmallMargin">
+    <ObjectHeader
+      title="{$this>orderNumber}"
+      number="{$this>totalAmount}"
+      numberUnit="{$this>currency}"
+      responsive="true">
+      <attributes>
+        <ObjectAttribute title="Customer" text="{$this>customerName}" />
+        <ObjectAttribute title="Date" text="{$this>orderDate}" />
+        <ObjectAttribute title="Rep" text="{$this>salesRep}" />
+      </attributes>
+      <statuses>
+        <ObjectStatus text="{$this>status}" />
+      </statuses>
+    </ObjectHeader>
+  </VBox>
+</core:FragmentDefinition>

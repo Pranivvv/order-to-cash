@@ -79,3 +79,32 @@ Deferred:
 - OVP/Fiori launchpad card packaging.
 - MockServer mode.
 - Security-aware analytics filtering.
+
+## Phase 4 - Advanced UI5 Patterns
+
+Status: Complete
+
+Completed:
+- Created freestyle SAPUI5 app in `app/advanced`.
+- Added main sales orders page using a custom `ExtendedTable`.
+- Added detail page using `OrderSummaryCard` XML composite control.
+- Added lazy-loaded create order fragment with customer selection, delivery date, notes, and currency.
+- Added status filter fragment with status filters and sort options.
+- Added confirmation dialog fragment for reusable dialog patterns.
+- Added custom `StatusBadge` control with renderer API v2 and status-specific styling.
+- Added `ExtendedTable` control extending `sap.m.Table` with export and refresh toolbar actions.
+- Added small reusable `o2c.lib` library with an `OrderStatus` enum and `OrderCard` control.
+- Added controller logic for loading orders/customers, creating sales orders, filtering, sorting, navigation, status click handling, and CSV export.
+
+Verified:
+- Advanced app manifest JSON is valid.
+- Service metadata still compiles with service, UI, and analytics annotations.
+- `npm run test:service` passes.
+- CAP returns HTTP 200 for `/advanced/webapp/index.html`.
+- CAP returns HTTP 200 for advanced views, fragments, controls, CSS, preload, and CAP data endpoints.
+- New advanced app JavaScript files pass `node --check`.
+
+Deferred:
+- Deep browser interaction testing with Playwright.
+- Excel export via `sap.ui.export.Spreadsheet`; current export is lightweight CSV.
+- Reusing these controls inside the Fiori Elements app.

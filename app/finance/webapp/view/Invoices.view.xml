@@ -1,0 +1,88 @@
+<mvc:View
+  controllerName="o2c.finance.controller.Invoices"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:l="sap.ui.layout"
+  displayBlock="true">
+  <Page title="{i18n>invoicesTitle}" busy="{finance>/busy}">
+    <headerContent>
+      <Button text="{i18n>recordPayment}" type="Emphasized" icon="sap-icon://payment-approval" press="onOpenPaymentDialog" />
+      <Button text="{i18n>refresh}" icon="sap-icon://refresh" press="onRefresh" />
+    </headerContent>
+    <content>
+      <MessageStrip
+        text="{finance>/error}"
+        type="Error"
+        showIcon="true"
+        visible="{= !!${finance>/error} }"
+        class="sapUiSmallMargin" />
+
+      <l:Grid defaultSpan="XL8 L8 M12 S12" hSpacing="1" vSpacing="1" class="sapUiSmallMargin">
+        <Panel headerText="Invoices">
+          <Table
+            id="invoicesTable"
+            mode="SingleSelectMaster"
+            itemPress="onInvoicePress"
+            selectionChange="onInvoiceSelectionChange"
+            items="{finance>/invoices}">
+            <columns>
+              <Column><Text text="Invoice #" /></Column>
+              <Column><Text text="Order #" /></Column>
+              <Column><Text text="Due Date" /></Column>
+              <Column hAlign="End"><Text text="Total" /></Column>
+              <Column><Text text="Status" /></Column>
+            </columns>
+            <items>
+              <ColumnListItem type="Active" press="onInvoicePress" selected="{= ${finance>ID} === ${finance>/selectedInvoice/ID} }">
+                <cells>
+                  <ObjectIdentifier title="{finance>invoiceNumber}" />
+                  <Text text="{finance>orderNumber}" />
+                  <Text text="{finance>dueDate}" />
+                  <ObjectNumber number="{finance>totalAmount}" unit="{finance>currency}" />
+                  <ObjectStatus text="{finance>status}" state="{path: 'finance>status', formatter: '.statusState'}" />
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </Panel>
+
+        <Panel headerText="Selected Invoice">
+          <ObjectHeader
+            title="{finance>/selectedInvoice/invoiceNumber}"
+            intro="{finance>/selectedInvoice/orderNumber}"
+            number="{finance>/selectedInvoice/totalAmount}"
+            numberUnit="{finance>/selectedInvoice/currency}">
+            <attributes>
+              <ObjectAttribute title="Invoice Date" text="{finance>/selectedInvoice/invoiceDate}" />
+              <ObjectAttribute title="Due Date" text="{finance>/selectedInvoice/dueDate}" />
+              <ObjectAttribute title="Status" text="{finance>/selectedInvoice/status}" />
+              <ObjectAttribute title="Paid Total" text="{finance>/selectedInvoice/paidTotal}" />
+              <ObjectAttribute title="Open Amount" text="{finance>/selectedInvoice/openAmount}" />
+            </attributes>
+          </ObjectHeader>
+        </Panel>
+      </l:Grid>
+
+      <Panel headerText="{i18n>payments}" class="sapUiSmallMargin">
+        <Table items="{finance>/payments}" noDataText="Select an invoice to view payments">
+          <columns>
+            <Column><Text text="Payment Date" /></Column>
+            <Column hAlign="End"><Text text="Amount" /></Column>
+            <Column><Text text="Method" /></Column>
+            <Column><Text text="Reference" /></Column>
+          </columns>
+          <items>
+            <ColumnListItem>
+              <cells>
+                <Text text="{finance>paymentDate}" />
+                <ObjectNumber number="{finance>amount}" />
+                <Text text="{finance>method}" />
+                <Text text="{finance>reference}" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+      </Panel>
+    </content>
+  </Page>
+</mvc:View>

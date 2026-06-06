@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Order to Cash</title>
+    <style>
+      :root {
+        color: #1d2d3e;
+        font-family: Arial, sans-serif;
+      }
+
+      body {
+        background: #f5f6f7;
+        margin: 0;
+      }
+
+      header {
+        background: #0a6ed1;
+        color: #fff;
+        padding: 1.5rem 2rem;
+      }
+
+      main {
+        margin: 0 auto;
+        max-width: 1120px;
+        padding: 2rem;
+      }
+
+      .grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+
+      .card {
+        background: #fff;
+        border: 1px solid #d9d9d9;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        padding: 1rem;
+      }
+
+      .card h2 {
+        font-size: 1.1rem;
+        margin: 0 0 0.5rem;
+      }
+
+      .card p {
+        color: #556b82;
+        min-height: 3rem;
+      }
+
+      a {
+        color: #0a6ed1;
+        font-weight: 600;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Order to Cash</h1>
+      <p>Local CAP cockpit for Phase 5 end-to-end verification.</p>
+    </header>
+    <main>
+      <section class="grid">
+        <article class="card">
+          <h2>Sales Orders</h2>
+          <p>Fiori Elements list and object page for the O2C sales order service.</p>
+          <a href="/salesorders/webapp/index.html?fresh=phase5&sap-ui-xx-componentPreload=off">Open app</a>
+        </article>
+        <article class="card">
+          <h2>Analytics</h2>
+          <p>KPI overview, monthly revenue chart, and order status distribution.</p>
+          <a href="/analytics/webapp/index.html?fresh=phase5">Open app</a>
+        </article>
+        <article class="card">
+          <h2>Finance</h2>
+          <p>Invoice list and Record Payment dialog for moving invoices and orders to Paid.</p>
+          <a href="/finance/webapp/index.html?fresh=phase6">Open app</a>
+        </article>
+        <article class="card">
+          <h2>Advanced UI</h2>
+          <p>Fragments, custom controls, extended table, and lightweight CSV export.</p>
+          <a href="/advanced/webapp/index.html?fresh=phase5">Open app</a>
+        </article>
+        <article class="card">
+          <h2>OData Service</h2>
+          <p>Browse the live OData V4 service and metadata exposed by CAP.</p>
+          <a href="/api/o2c/">Open service</a>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

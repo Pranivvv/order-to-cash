@@ -1,0 +1,12 @@
+{
+  "name": "o2c-finance",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Finance UI for O2C invoices and payments",
+  "scripts": {
+    "start": "ui5 serve --open index.html"
+  },
+  "devDependencies": {
+    "@ui5/cli": "^4"
+  }
+}

@@ -1,0 +1,46 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:f="sap.ui.layout.form">
+  <Dialog
+    id="recordPaymentDialog"
+    title="Record Payment"
+    contentWidth="480px"
+    draggable="true"
+    resizable="true">
+    <content>
+      <f:SimpleForm editable="true" layout="ColumnLayout">
+        <f:content>
+          <Label text="Invoice" />
+          <Text text="{payment>/invoiceNumber} ({payment>/orderNumber})" />
+
+          <Label text="Open Amount" />
+          <Text text="{payment>/openAmount} {payment>/currency}" />
+
+          <Label text="Payment Amount" required="true" />
+          <Input
+            value="{payment>/amount}"
+            type="Number"
+            placeholder="Enter payment amount" />
+
+          <Label text="Method" />
+          <Select selectedKey="{payment>/method}">
+            <core:Item key="Wire" text="Wire" />
+            <core:Item key="Card" text="Card" />
+            <core:Item key="Check" text="Check" />
+            <core:Item key="Cash" text="Cash" />
+          </Select>
+
+          <Label text="Reference" />
+          <Input value="{payment>/reference}" placeholder="Payment reference" />
+        </f:content>
+      </f:SimpleForm>
+    </content>
+    <beginButton>
+      <Button text="Record" type="Emphasized" press="onRecordPaymentConfirm" />
+    </beginButton>
+    <endButton>
+      <Button text="Cancel" press="onRecordPaymentCancel" />
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>

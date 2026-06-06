@@ -108,3 +108,68 @@ Deferred:
 - Deep browser interaction testing with Playwright.
 - Excel export via `sap.ui.export.Spreadsheet`; current export is lightweight CSV.
 - Reusing these controls inside the Fiori Elements app.
+
+## Phase 5 - End-to-End User Flow Verification
+
+Status: Complete
+
+Completed:
+- Added local cockpit page at `app/index.html`.
+- Added links to Sales Orders, Analytics, Advanced UI, and the OData service.
+- Added `docs/user-flow.md` documenting the current non-security O2C lifecycle.
+- Added `test/o2c-flow.test.js` to execute the full local flow over HTTP.
+- Added `npm run test:flow` script.
+
+Verified:
+- `package.json` is valid JSON.
+- `test/o2c-flow.test.js` passes `node --check`.
+- `npm run test:flow` passes.
+- `npm run test:service` still passes.
+
+Covered flow:
+- Create draft sales order.
+- Add sales order item.
+- Submit order.
+- Approve order.
+- Create invoice.
+- Record full payment.
+- Confirm analytics remains readable.
+
+Deferred:
+- Role-specific flow branches for SalesRep, SalesManager, FinanceUser, and Admin.
+- Security-protected user journey after XSUAA is introduced.
+- Browser automation with screenshots.
+
+## Phase 6 - Finance Invoice Payment UI
+
+Status: Complete
+
+Completed:
+- Created freestyle SAPUI5 finance app in `app/finance`.
+- Added invoice list with invoice number, sales order number, due date, total, currency, and status.
+- Added selected invoice summary panel.
+- Added payments table for the selected invoice.
+- Added lazy-loaded Record Payment dialog with amount, method, and reference.
+- Wired Record Payment to the existing bound action `Invoices(...)/O2CService.recordPayment`.
+- Added Finance link to the local cockpit page.
+- Updated `docs/user-flow.md` with the UI payment step.
+- Updated `test/o2c-flow.test.js` to verify the Finance app is served.
+
+Verified:
+- Finance manifest JSON is valid.
+- Finance Component and controller pass `node --check`.
+- `npm run test:flow` passes.
+- `npm run test:service` passes.
+- CAP returns HTTP 200 for Finance app HTML, view, fragment, controller, i18n, Invoices, and Payments resources.
+
+Covered UI flow:
+- Open Finance app.
+- Select invoice.
+- Open Record Payment dialog.
+- Submit payment to `recordPayment`.
+- Backend updates invoice to `Paid` or `PartiallyPaid`; if fully paid, related sales order becomes `Paid`.
+
+Deferred:
+- Finance-specific role checks.
+- Partial-payment balance calculation in the UI.
+- Browser automation for clicking through the payment dialog.

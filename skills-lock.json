@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "sap-cap-capire": {
+      "source": "secondsky/sap-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/sap-cap-capire/skills/sap-cap-capire/SKILL.md",
+      "computedHash": "bdcfc942c381bfcc3e588610be80f8abf28a0ee95f972b845ea7537ab1beae1e"
+    }
+  }
+}

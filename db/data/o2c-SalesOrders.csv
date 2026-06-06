@@ -1,0 +1,4 @@
+ID,orderNumber,customer_ID,orderDate,deliveryDate,status,totalAmount,currency,salesRep,notes
+770e8400-e29b-41d4-a716-446655440001,SO-2026-00001,550e8400-e29b-41d4-a716-446655440001,2026-06-01,2026-06-20,Draft,62000.00,USD,Alice Johnson,Initial enterprise package
+770e8400-e29b-41d4-a716-446655440002,SO-2026-00002,550e8400-e29b-41d4-a716-446655440002,2026-06-02,2026-06-25,Submitted,25000.00,USD,Ben Smith,Cloud migration
+770e8400-e29b-41d4-a716-446655440003,SO-2026-00003,550e8400-e29b-41d4-a716-446655440003,2026-06-03,2026-06-28,Approved,30000.00,USD,Chitra Rao,Professional services

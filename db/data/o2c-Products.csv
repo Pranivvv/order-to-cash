@@ -1,0 +1,6 @@
+ID,productCode,description,unitPrice,stockQuantity,category,currency
+660e8400-e29b-41d4-a716-446655440001,PROD-001,Enterprise Software License,50000.00,999,Software,USD
+660e8400-e29b-41d4-a716-446655440002,PROD-002,Annual Support Contract,12000.00,999,Services,USD
+660e8400-e29b-41d4-a716-446655440003,PROD-003,Professional Services Day Rate,1500.00,999,Services,USD
+660e8400-e29b-41d4-a716-446655440004,PROD-004,Hardware Server Unit,8000.00,50,Hardware,USD
+660e8400-e29b-41d4-a716-446655440005,PROD-005,Cloud Migration Package,25000.00,100,Services,USD

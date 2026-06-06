@@ -1,0 +1,2 @@
+ID,invoiceNumber,salesOrder_ID,invoiceDate,dueDate,status,totalAmount,currency
+990e8400-e29b-41d4-a716-446655440001,INV-2026-00001,770e8400-e29b-41d4-a716-446655440003,2026-06-04,2026-07-04,Open,30000.00,USD

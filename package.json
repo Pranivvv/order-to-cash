@@ -1,0 +1,30 @@
+{
+  "name": "order-to-cash",
+  "version": "1.0.0",
+  "description": "SAP CAP Order to Cash phase-one OData services",
+  "private": true,
+  "scripts": {
+    "start": "cds-serve",
+    "watch": "cds-watch",
+    "deploy": "cds-deploy",
+    "test:service": "node test/o2c-service.test.js"
+  },
+  "dependencies": {
+    "@cap-js/sqlite": "^2",
+    "@sap/cds": "^9"
+  },
+  "devDependencies": {
+    "@cap-js/cds-test": "^1.0.1",
+    "@sap/cds-dk": "^9"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "url": "db.sqlite"
+        }
+      }
+    }
+  }
+}

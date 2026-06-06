@@ -1,0 +1,6 @@
+ID,customerNumber,name,email,phone,creditLimit,country,blocked
+550e8400-e29b-41d4-a716-446655440001,CUST-001,Acme Corp,acme@example.com,+1-555-0100,500000.00,US,false
+550e8400-e29b-41d4-a716-446655440002,CUST-002,Global Tech,info@globaltech.com,+44-20-0001,750000.00,GB,false
+550e8400-e29b-41d4-a716-446655440003,CUST-003,Tata Enterprises,tata@example.in,+91-80-0001,1000000.00,IN,false
+550e8400-e29b-41d4-a716-446655440004,CUST-004,Northwind Traders,northwind@example.com,+1-555-0101,300000.00,US,false
+550e8400-e29b-41d4-a716-446655440005,CUST-005,Contoso Retail,contoso@example.com,+49-30-0001,650000.00,DE,false

@@ -18,10 +18,55 @@ annotate O2CService.SalesOrders with @(
     { $Type: 'UI.DataField', Value: customerName, Label: 'Customer' },
     { $Type: 'UI.DataField', Value: orderDate, Label: 'Order Date' },
     { $Type: 'UI.DataField', Value: deliveryDate, Label: 'Delivery Date' },
-    { $Type: 'UI.DataField', Value: status, Label: 'Status' },
+    {
+      $Type: 'UI.DataFieldForAnnotation',
+      Target: '@UI.DataPoint#Status',
+      Label: 'Status'
+    },
     { $Type: 'UI.DataField', Value: totalAmount, Label: 'Total' },
     { $Type: 'UI.DataField', Value: currency, Label: 'Currency' },
-    { $Type: 'UI.DataField', Value: salesRep, Label: 'Sales Rep' }
+    { $Type: 'UI.DataField', Value: salesRep, Label: 'Sales Rep' },
+    {
+      $Type: 'UI.DataFieldForAction',
+      Action: 'O2CService.submitOrder',
+      Label: 'Submit'
+    },
+    {
+      $Type: 'UI.DataFieldForAction',
+      Action: 'O2CService.approveOrder',
+      Label: 'Approve'
+    }
+  ],
+  UI.DataPoint #Status: {
+    Value: status,
+    Title: 'Status'
+  },
+  UI.Identification: [
+    {
+      $Type: 'UI.DataFieldForAction',
+      Action: 'O2CService.submitOrder',
+      Label: 'Submit'
+    },
+    {
+      $Type: 'UI.DataFieldForAction',
+      Action: 'O2CService.approveOrder',
+      Label: 'Approve'
+    },
+    {
+      $Type: 'UI.DataFieldForAction',
+      Action: 'O2CService.rejectOrder',
+      Label: 'Reject'
+    },
+    {
+      $Type: 'UI.DataFieldForAction',
+      Action: 'O2CService.cancelOrder',
+      Label: 'Cancel'
+    },
+    {
+      $Type: 'UI.DataFieldForAction',
+      Action: 'O2CService.createInvoice',
+      Label: 'Create Invoice'
+    }
   ],
   UI.FieldGroup #General: {
     Data: [

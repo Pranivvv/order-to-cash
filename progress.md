@@ -4,6 +4,7 @@
 
 - Security configuration, XSUAA, roles, role collections, app-router security, and authorization checks are intentionally deferred.
 - Phase 1 focuses on the CAP data model, OData V4 service, service handlers, seed data, and local service tests.
+- Phase 2 focuses on the Fiori Elements Sales Orders app without user-api role checks.
 
 ## Phase 1 - OData Services
 
@@ -25,6 +26,29 @@ Completed:
 
 Remaining after Phase 1:
 - Add broader negative-path tests for all action status transitions.
-- Add Fiori Elements UI in `app/salesorders`.
 - Add analytical UI and chart refinements.
 - Add security configuration and role restrictions in a later phase.
+
+## Phase 2 - Fiori Elements Sales Orders App
+
+Status: Complete
+
+Completed:
+- Created `app/salesorders` Fiori Elements application shell.
+- Added manifest-driven OData V4 connection to `/api/o2c/`.
+- Added List Report route for `SalesOrders` with ResponsiveTable, multi-select, export, and full screen enabled.
+- Added Object Page route for `SalesOrders`.
+- Added Object Page route for `SalesOrderItems`.
+- Added i18n labels for the app and common O2C objects/actions.
+- Added Fiori annotations for Sales Order status display and lifecycle action buttons.
+- Validated the app manifest JSON.
+- Compiled service metadata with annotations.
+- Confirmed the CAP service endpoint returns HTTP 200.
+- Confirmed the Sales Orders app HTML returns HTTP 200 at `/salesorders/webapp/index.html`.
+- Re-ran the Phase 1 OData smoke test successfully after annotation changes.
+- Fixed blank-page startup issues by adding full-height app hosting, disabling flex/lrep lookup for now, adding preload/i18n fallback files, and validating previously missing UI resources return HTTP 200.
+
+Deferred:
+- Role-based button visibility.
+- user-api integration.
+- XSUAA and app-router security.

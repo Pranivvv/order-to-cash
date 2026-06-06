@@ -1,0 +1,39 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:f="sap.ui.layout.form">
+  <Dialog
+    id="addStockDialog"
+    title="{i18n>addStock}"
+    contentWidth="420px"
+    draggable="true"
+    resizable="true">
+    <content>
+      <f:SimpleForm editable="true" layout="ColumnLayout">
+        <f:content>
+          <Label text="{i18n>product}" />
+          <Text text="{stock>/productCode} - {stock>/description}" />
+
+          <Label text="{i18n>currentStock}" />
+          <Text text="{stock>/currentStock}" />
+
+          <Label text="{i18n>quantityToAdd}" required="true" />
+          <Input
+            value="{stock>/quantity}"
+            type="Number" />
+
+          <Label text="{i18n>reference}" />
+          <Input
+            value="{stock>/reference}"
+            maxLength="50" />
+        </f:content>
+      </f:SimpleForm>
+    </content>
+    <beginButton>
+      <Button text="{i18n>addStock}" type="Emphasized" press="onAddStockConfirm" />
+    </beginButton>
+    <endButton>
+      <Button text="{i18n>cancel}" press="onAddStockCancel" />
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>

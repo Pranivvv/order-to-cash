@@ -44,33 +44,6 @@
           </ColumnListItem>
         </o2c:items>
       </o2c:ExtendedTable>
-
-      <Panel headerText="Product Stock" expandable="true" expanded="true" class="sapUiSmallMarginTop">
-        <Table
-          id="productsTable"
-          items="{view>/products}"
-          growing="true"
-          growingThreshold="10">
-          <columns>
-            <Column><Text text="Product" /></Column>
-            <Column><Text text="Description" /></Column>
-            <Column><Text text="Category" /></Column>
-            <Column hAlign="End"><Text text="Unit Price" /></Column>
-            <Column hAlign="End"><Text text="Stock" /></Column>
-          </columns>
-          <items>
-            <ColumnListItem>
-              <cells>
-                <ObjectIdentifier title="{view>productCode}" />
-                <Text text="{view>description}" />
-                <Text text="{view>category}" />
-                <ObjectNumber number="{view>unitPrice}" unit="{view>currency}" />
-                <ObjectNumber number="{view>stockQuantity}" />
-              </cells>
-            </ColumnListItem>
-          </items>
-        </Table>
-      </Panel>
     </content>
   </Page>
 </mvc:View>

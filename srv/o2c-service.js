@@ -96,6 +96,23 @@ module.exports = cds.service.impl(async function () {
     return SELECT.one.from(Customers).where({ ID });
   });
 
+  this.on('addStock', Products, async (req) => {
+    const ID = getId(req);
+    const product = await SELECT.one.from(Products).where({ ID });
+    if (!product) return req.error(404, 'Product not found');
+
+    const quantity = Number(req.data.quantity);
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      return req.error(400, 'Stock quantity must be a positive whole number');
+    }
+
+    await UPDATE(Products).set({
+      stockQuantity: Number(product.stockQuantity || 0) + quantity
+    }).where({ ID });
+
+    return SELECT.one.from(Products).where({ ID });
+  });
+
   this.on('submitOrder', SalesOrders, async (req) => {
     const ID = getId(req);
     const order = await SELECT.one.from(SalesOrders).where({ ID });

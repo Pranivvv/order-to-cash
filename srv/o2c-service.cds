@@ -7,7 +7,10 @@ service O2CService @(path: '/api/o2c') {
     };
 
   @readonly
-  entity Products as projection on o2c.Products;
+  entity Products as projection on o2c.Products
+    actions {
+      action addStock(quantity: Integer, reference: String) returns Products;
+    };
 
   @cds.redirection.target
   entity SalesOrders as projection on o2c.SalesOrders {

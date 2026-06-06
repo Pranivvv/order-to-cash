@@ -20,7 +20,13 @@ async function main() {
     assert.ok(customer, 'A seed customer is required');
     assert.ok(product, 'Seed product PROD-001 is required');
 
-    const startingStock = Number(product.stockQuantity);
+    const originalStock = Number(product.stockQuantity);
+    const replenished = await post(`/Products(${product.ID})/O2CService.addStock`, {
+      quantity: 5,
+      reference: 'INVENTORY-TEST'
+    });
+    const startingStock = originalStock + 5;
+    assert.equal(Number(replenished.stockQuantity), startingStock, 'Add stock action should increase stock');
 
     const cancellableOrder = await createOrder(customer.ID, 'Inventory Cancel Test');
     await addItem(cancellableOrder.ID, product.ID, 2);

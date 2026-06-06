@@ -56,20 +56,20 @@
           <Label text="Order Amount Preview" />
           <Text text="{dialog>/lineTotal} {dialog>/currency}" />
 
+          <Label text="Currency" />
+          <Select selectedKey="{dialog>/currency}" change="onCurrencyChange">
+            <core:Item key="USD" text="USD - US Dollar" />
+            <core:Item key="EUR" text="EUR - Euro" />
+            <core:Item key="GBP" text="GBP - British Pound" />
+            <core:Item key="INR" text="INR - Indian Rupee" />
+          </Select>
+
           <Label text="Notes" />
           <TextArea
             value="{dialog>/notes}"
             rows="3"
             growing="true"
             maxLength="500" />
-
-          <Label text="Currency" />
-          <Select selectedKey="{dialog>/currency}">
-            <core:Item key="USD" text="USD - US Dollar" />
-            <core:Item key="EUR" text="EUR - Euro" />
-            <core:Item key="GBP" text="GBP - British Pound" />
-            <core:Item key="INR" text="INR - Indian Rupee" />
-          </Select>
         </f:content>
       </f:SimpleForm>
     </content>

@@ -1,0 +1,76 @@
+<mvc:View
+  controllerName="o2c.inventory.controller.Products"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  displayBlock="true">
+  <Page title="{i18n>productsTitle}" busy="{inventory>/busy}">
+    <headerContent>
+      <Button text="{i18n>refresh}" icon="sap-icon://refresh" press="onRefresh" />
+    </headerContent>
+    <content>
+      <MessageStrip
+        text="{inventory>/error}"
+        type="Error"
+        showIcon="true"
+        visible="{= !!${inventory>/error} }"
+        class="sapUiSmallMargin" />
+
+      <HBox class="sapUiSmallMargin" wrap="Wrap" renderType="Bare">
+        <GenericTile header="{i18n>products}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+          <TileContent>
+            <NumericContent value="{inventory>/summary/productCount}" icon="sap-icon://product" />
+          </TileContent>
+        </GenericTile>
+        <GenericTile header="{i18n>totalStock}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+          <TileContent>
+            <NumericContent value="{inventory>/summary/totalStock}" icon="sap-icon://inventory" />
+          </TileContent>
+        </GenericTile>
+        <GenericTile header="{i18n>lowStock}" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+          <TileContent>
+            <NumericContent value="{inventory>/summary/lowStockCount}" icon="sap-icon://alert" valueColor="Critical" />
+          </TileContent>
+        </GenericTile>
+      </HBox>
+
+      <Table
+        id="productsTable"
+        items="{inventory>/products}"
+        growing="true"
+        growingThreshold="20"
+        class="sapUiSmallMargin">
+        <headerToolbar>
+          <Toolbar>
+            <Title text="{i18n>stockTable}" />
+            <ToolbarSpacer />
+            <SearchField width="18rem" search="onSearch" liveChange="onSearch" />
+          </Toolbar>
+        </headerToolbar>
+        <columns>
+          <Column><Text text="{i18n>product}" /></Column>
+          <Column><Text text="{i18n>description}" /></Column>
+          <Column><Text text="{i18n>category}" /></Column>
+          <Column hAlign="End"><Text text="{i18n>unitPrice}" /></Column>
+          <Column hAlign="End"><Text text="{i18n>stock}" /></Column>
+          <Column><Text text="{i18n>status}" /></Column>
+          <Column hAlign="End"><Text text="{i18n>actions}" /></Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <ObjectIdentifier title="{inventory>productCode}" />
+              <Text text="{inventory>description}" />
+              <Text text="{inventory>category}" />
+              <ObjectNumber number="{inventory>unitPrice}" unit="{inventory>currency}" />
+              <ObjectNumber number="{inventory>stockQuantity}" state="{= ${inventory>stockQuantity} &lt;= 10 ? 'Warning' : 'Success' }" />
+              <ObjectStatus
+                text="{= ${inventory>stockQuantity} &lt;= 10 ? ${i18n>lowStockStatus} : ${i18n>availableStatus} }"
+                state="{= ${inventory>stockQuantity} &lt;= 10 ? 'Warning' : 'Success' }" />
+              <Button text="{i18n>addStock}" type="Transparent" icon="sap-icon://add-product" press="onOpenAddStockDialog" />
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+  </Page>
+</mvc:View>

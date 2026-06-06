@@ -8,6 +8,13 @@ sap.ui.define([
 ], function (BaseController, JSONModel, Filter, FilterOperator, Sorter, MessageToast) {
   "use strict";
 
+  const currencyRates = {
+    USD: 1,
+    EUR: 0.92,
+    GBP: 0.78,
+    INR: 83
+  };
+
   return BaseController.extend("o2c.advanced.controller.Main", {
     onInit: function () {
       this.loadOrders();
@@ -39,9 +46,11 @@ sap.ui.define([
         productId: product.ID || "",
         quantity: 1,
         discount: 0,
-        unitPrice: Number(product.unitPrice || 0),
+        baseUnitPrice: Number(product.unitPrice || 0),
+        baseCurrency: product.currency || "USD",
+        unitPrice: this.convertPrice(Number(product.unitPrice || 0), product.currency || "USD", "USD"),
         availableStock: Number(product.stockQuantity || 0),
-        lineTotal: Number(product.unitPrice || 0),
+        lineTotal: this.convertPrice(Number(product.unitPrice || 0), product.currency || "USD", "USD"),
         deliveryDate: "",
         notes: "",
         currency: "USD"
@@ -94,6 +103,7 @@ sap.ui.define([
               order_ID: created.ID,
               product_ID: data.productId,
               quantity: Number(data.quantity),
+              unitPrice: Number(data.unitPrice || 0),
               discount: Number(data.discount || 0)
             })
           });
@@ -115,8 +125,24 @@ sap.ui.define([
       const dialogModel = this._createDialog.getModel("dialog");
       const product = this.findSelectedProduct(dialogModel.getProperty("/productId"));
 
-      dialogModel.setProperty("/unitPrice", Number(product?.unitPrice || 0));
+      dialogModel.setProperty("/baseUnitPrice", Number(product?.unitPrice || 0));
+      dialogModel.setProperty("/baseCurrency", product?.currency || "USD");
+      dialogModel.setProperty("/unitPrice", this.convertPrice(
+        Number(product?.unitPrice || 0),
+        product?.currency || "USD",
+        dialogModel.getProperty("/currency") || "USD"
+      ));
       dialogModel.setProperty("/availableStock", Number(product?.stockQuantity || 0));
+      this.updateLineTotal();
+    },
+
+    onCurrencyChange: function () {
+      const dialogModel = this._createDialog.getModel("dialog");
+      dialogModel.setProperty("/unitPrice", this.convertPrice(
+        Number(dialogModel.getProperty("/baseUnitPrice") || 0),
+        dialogModel.getProperty("/baseCurrency") || "USD",
+        dialogModel.getProperty("/currency") || "USD"
+      ));
       this.updateLineTotal();
     },
 
@@ -146,6 +172,13 @@ sap.ui.define([
       const lineTotal = quantity * unitPrice * (1 - discount / 100);
 
       dialogModel.setProperty("/lineTotal", Number(lineTotal.toFixed(2)));
+    },
+
+    convertPrice: function (amount, fromCurrency, toCurrency) {
+      const fromRate = currencyRates[fromCurrency] || currencyRates.USD;
+      const toRate = currencyRates[toCurrency] || currencyRates.USD;
+
+      return Number((Number(amount || 0) / fromRate * toRate).toFixed(2));
     },
 
     onOpenFilter: async function () {

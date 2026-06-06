@@ -1,0 +1,9 @@
+{
+  "name": "o2c-inventory-ui",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "ui5 serve --open index.html"
+  },
+  "dependencies": {}
+}

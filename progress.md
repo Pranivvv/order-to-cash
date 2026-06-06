@@ -257,3 +257,67 @@ Deferred:
 - Add-item action from the order detail page for existing Draft orders.
 - Product-level stock adjustment UI.
 - Security and role restrictions.
+
+## Phase 10 - Dedicated Inventory App
+
+Status: Complete
+
+Completed:
+- Created dedicated freestyle SAPUI5 inventory app in `app/inventory`.
+- Added product stock overview with KPI tiles for product count, total stock, and low-stock count.
+- Added searchable product stock table with product code, description, category, unit price, stock, and availability status.
+- Removed the full product stock table from the Advanced UI main screen.
+- Kept product, quantity, discount, available stock, unit price, and amount preview inside the Advanced UI Create Order dialog.
+- Added Inventory link to the local cockpit page.
+- Updated `docs/user-flow.md` with separate Inventory and Draft Order steps.
+- Updated `test/o2c-flow.test.js` to verify the Inventory app is served.
+
+Verified:
+- `node --check app/inventory/webapp/Component.js` passes.
+- `node --check app/inventory/webapp/controller/Products.controller.js` passes.
+- `node --check test/o2c-flow.test.js` passes.
+- Inventory manifest parses as valid JSON.
+- Inventory and Advanced XML views parse successfully.
+- `npm run test:flow` passes.
+- CAP returns HTTP 200 for Inventory app HTML, Component, Products view, Products controller, locale i18n, and Products stock endpoint.
+
+Deferred:
+- Product-level stock adjustment UI.
+- Inventory movement ledger.
+- Low-stock threshold configuration.
+- Security and role restrictions.
+
+## Phase 11 - Currency-Aware Draft Pricing And Stock Add
+
+Status: Complete
+
+Completed:
+- Added bound Product action `addStock(quantity, reference)` to the OData service.
+- Implemented `addStock` validation and stock increase handling in the CAP service.
+- Added `Add Stock` row action to the Inventory app.
+- Added Inventory `Add Stock` dialog with product, current stock, quantity, and reference fields.
+- Updated Inventory controller to call `Products(...)/O2CService.addStock` and refresh stock after success.
+- Added local demo currency conversion in the Advanced UI Create Order flow.
+- Updated Advanced UI unit price and order amount preview when product or currency changes.
+- Sent the converted unit price when creating the initial sales order item so CAP persists the selected-currency total.
+- Updated cockpit cache keys and user-flow documentation.
+- Extended tests to cover Product `addStock` and converted EUR order totals.
+
+Verified:
+- `node --check app/advanced/webapp/controller/Main.controller.js` passes.
+- `node --check app/inventory/webapp/controller/Products.controller.js` passes.
+- `node --check test/o2c-inventory.test.js` passes.
+- `node --check test/o2c-flow.test.js` passes.
+- Inventory and Advanced XML files parse successfully.
+- `npx cds compile srv --to csn` passes and includes the Product `addStock` action.
+- `npm run test:inventory` passes.
+- `npm run test:flow` passes.
+- `npm run test:validation` passes.
+- `npm run test:service` passes.
+- CAP returns HTTP 200 for updated Advanced fragment/controller, Inventory view/fragment/controller, and service metadata.
+
+Deferred:
+- Real exchange-rate service or maintained currency-rate table.
+- Inventory movement ledger for stock additions.
+- Product creation/editing UI.
+- Security and role restrictions.

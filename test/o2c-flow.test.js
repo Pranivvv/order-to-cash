@@ -17,6 +17,7 @@ async function main() {
     await expectOk('/salesorders/webapp/index.html');
     await expectOk('/analytics/webapp/index.html');
     await expectOk('/finance/webapp/index.html');
+    await expectOk('/inventory/webapp/index.html');
     await expectOk('/advanced/webapp/index.html');
 
     const customers = await get('/Customers?$top=1');
@@ -27,7 +28,7 @@ async function main() {
     const created = await post('/SalesOrders', {
       customer_ID: customers.value[0].ID,
       deliveryDate: '2026-08-15',
-      currency: 'USD',
+      currency: 'EUR',
       salesRep: 'Phase 5 Flow Test',
       notes: 'Created by automated end-to-end flow'
     });
@@ -36,9 +37,10 @@ async function main() {
     const item = await post('/SalesOrderItems', {
       order_ID: created.ID,
       product_ID: products.value[0].ID,
-      quantity: 1
+      quantity: 1,
+      unitPrice: 46000
     });
-    assert.ok(Number(item.lineTotal) > 0, 'Line total should be calculated');
+    assert.equal(Number(item.lineTotal), 46000, 'Line total should use the selected currency unit price');
 
     const submitted = await post(`/SalesOrders(${created.ID})/O2CService.submitOrder`, {});
     assert.equal(submitted.status, 'Submitted');
@@ -48,7 +50,8 @@ async function main() {
 
     const invoice = await post(`/SalesOrders(${created.ID})/O2CService.createInvoice`, {});
     assert.equal(invoice.status, 'Open');
-    assert.ok(Number(invoice.totalAmount) > 0, 'Invoice should inherit the order total');
+    assert.equal(invoice.currency, 'EUR');
+    assert.equal(Number(invoice.totalAmount), 46000, 'Invoice should inherit the converted order total');
 
     const paid = await post(`/Invoices(${invoice.ID})/O2CService.recordPayment`, {
       amount: Number(invoice.totalAmount),

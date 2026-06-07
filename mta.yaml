@@ -104,16 +104,6 @@ modules:
               ServiceInstanceName: order-to-cash-auth
               ServiceKeyName: order-to-cash-auth-key
               sap.cloud.service: o2c.order.to.cash
-            - Name: order-to-cash-srv
-              Type: HTTP
-              ProxyType: Internet
-              Authentication: NoAuthentication
-              URL: https://${appname}-srv.${default-domain}
-              HTML5.DynamicDestination: true
-              HTML5.ForwardAuthToken: true
-              HTML5.Timeout: 60000
-              WebIDEEnabled: true
-              WebIDEUsage: odata_gen
     build-parameters:
       no-source: true
 

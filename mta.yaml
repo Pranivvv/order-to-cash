@@ -5,6 +5,7 @@ description: Order to Cash CAP application
 
 parameters:
   enable-parallel-deployments: true
+  appname: 7b303ba1trial-dev-order-to-cash
 
 build-parameters:
   before-all:
@@ -18,6 +19,7 @@ modules:
     path: .
     parameters:
       buildpack: nodejs_buildpack
+      host: ${appname}-srv
       memory: 256M
     properties:
       NODE_ENV: production
@@ -88,7 +90,6 @@ modules:
         parameters:
           service-key:
             name: order-to-cash-auth-key
-      - name: srv-api
     parameters:
       content:
         subaccount:
@@ -107,7 +108,7 @@ modules:
               Type: HTTP
               ProxyType: Internet
               Authentication: NoAuthentication
-              URL: ~{srv-api/srv-url}
+              URL: https://${appname}-srv.${default-domain}
               HTML5.DynamicDestination: true
               HTML5.ForwardAuthToken: true
               HTML5.Timeout: 60000

@@ -114,7 +114,6 @@ modules:
               HTML5.Timeout: 60000
               WebIDEEnabled: true
               WebIDEUsage: odata_gen
-              sap.cloud.service: o2c.order.to.cash
     build-parameters:
       no-source: true
 

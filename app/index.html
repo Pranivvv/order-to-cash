@@ -85,6 +85,17 @@
         border-color: #bb0000;
         color: #bb0000;
       }
+
+      .logout {
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 6px;
+        color: #fff;
+        cursor: pointer;
+        font: inherit;
+        margin-left: 0.5rem;
+        padding: 0.35rem 0.6rem;
+      }
     </style>
   </head>
   <body>
@@ -92,6 +103,7 @@
       <h1>Order to Cash</h1>
       <p>Local CAP cockpit for role-based app access.</p>
       <p id="userInfo" class="user">Checking login...</p>
+      <button id="logoutButton" class="logout" type="button">Logout</button>
     </header>
     <main>
       <section id="message" class="message">
@@ -135,6 +147,16 @@
       (async function () {
         const userInfo = document.getElementById("userInfo");
         const message = document.getElementById("message");
+        const logoutButton = document.getElementById("logoutButton");
+
+        logoutButton.addEventListener("click", function () {
+          if (location.port === "4004") {
+            alert("Local CAP uses browser Basic Auth. To switch users locally, use Incognito or clear site credentials. Deployed approuter sessions log out through /logout.");
+            return;
+          }
+
+          location.href = "/logout";
+        });
 
         try {
           const response = await fetch("/api/o2c/currentUser()", {

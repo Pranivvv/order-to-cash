@@ -2,6 +2,16 @@
   "xsappname": "o2c-cap-app",
   "tenant-mode": "dedicated",
   "description": "Order to Cash role security descriptor",
+  "oauth2-configuration": {
+    "redirect-uris": [
+      "http://localhost:5000/login/callback",
+      "https://*/login/callback"
+    ],
+    "post-logout-redirect-uris": [
+      "http://localhost:5000/logout.html",
+      "https://*/logout.html"
+    ]
+  },
   "scopes": [
     {
       "name": "$XSAPPNAME.SalesRep",

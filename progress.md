@@ -575,3 +575,43 @@ Verified:
 Browser checks needed:
 - Inventory UI: Product stock `50` and `100` should show `Low Stock`.
 - Inventory UI: Low Stock KPI should count products at or below `100`.
+
+## Phase 21 - Production Security And Approuter Wiring
+
+Status: Complete
+
+Completed:
+- Added production CAP JWT authentication configuration.
+- Added `@sap/xssec` dependency for production token validation.
+- Added SAP Application Router module under `app/router`.
+- Added `app/router/xs-app.json` with XSUAA-protected UI and API routes.
+- Added approuter logout endpoint `/logout` and logout page `/logout.html`.
+- Added cockpit Logout button that uses approuter logout outside local CAP direct mode.
+- Added `mta.yaml` with CAP service, approuter, XSUAA resource, and auth-token forwarding destination.
+- Added OAuth redirect and post-logout redirect URI configuration to `xs-security.json`.
+- Added Node 22 engine metadata for CAP and approuter modules.
+- Added `docs/security.md` with local users, role collections, logout behavior, and deployment steps.
+
+Verified:
+- Root and router npm dependency lockfiles were generated.
+- JSON files parse successfully:
+  - `package.json`
+  - `package-lock.json`
+  - `xs-security.json`
+  - `app/router/package.json`
+  - `app/router/package-lock.json`
+  - `app/router/xs-app.json`
+- CAP production auth resolves to JWT/XSUAA binding lookup.
+- CAP development auth remains mocked for local users.
+- `npx cds compile srv --to csn` passes.
+- `npm run test:auth` passes.
+- `npm run test:service` passes.
+- `npm run test:flow` passes.
+- `npm run test:validation` passes.
+- `npm run test:inventory` passes.
+
+Deployment checks needed:
+- Build an MTAR with `mbt build`.
+- Deploy to Cloud Foundry with `cf deploy`.
+- Assign BTP users to the generated `O2C_*` role collections.
+- Open the approuter URL and verify login, role-specific app visibility, API access, and `/logout`.

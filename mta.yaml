@@ -117,6 +117,8 @@ modules:
       commands:
         - npm install
         - npx ui5 build --dest dist
+        - rm -f dist/o2c-salesorders.zip
+        - cd dist && zip -qr o2c-salesorders.zip . -x o2c-salesorders.zip
 
   - name: o2c-finance
     type: html5
@@ -128,6 +130,8 @@ modules:
       commands:
         - npm install
         - npx ui5 build --dest dist
+        - rm -f dist/o2c-finance.zip
+        - cd dist && zip -qr o2c-finance.zip . -x o2c-finance.zip
 
   - name: o2c-inventory-ui
     type: html5
@@ -139,6 +143,8 @@ modules:
       commands:
         - npm install
         - npx ui5 build --dest dist
+        - rm -f dist/o2c-inventory-ui.zip
+        - cd dist && zip -qr o2c-inventory-ui.zip . -x o2c-inventory-ui.zip
 
   - name: o2c-analytics
     type: html5
@@ -150,6 +156,8 @@ modules:
       commands:
         - npm install
         - npx ui5 build --dest dist
+        - rm -f dist/o2c-analytics.zip
+        - cd dist && zip -qr o2c-analytics.zip . -x o2c-analytics.zip
 
   - name: o2c-advanced
     type: html5
@@ -161,6 +169,8 @@ modules:
       commands:
         - npm install
         - npx ui5 build --dest dist
+        - rm -f dist/o2c-advanced.zip
+        - cd dist && zip -qr o2c-advanced.zip . -x o2c-advanced.zip
 
 resources:
   - name: order-to-cash-auth

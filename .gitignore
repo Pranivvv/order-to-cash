@@ -4,6 +4,7 @@ node_modules/
 # CAP build and generated output
 gen/
 .cds-services.json
+mta_archives/
 
 # Local SQLite runtime files
 db.sqlite

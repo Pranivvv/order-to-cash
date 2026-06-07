@@ -106,9 +106,11 @@ modules:
             - Name: order-to-cash-srv
               Type: HTTP
               ProxyType: Internet
-              Authentication: OAuth2UserTokenExchange
+              Authentication: NoAuthentication
               URL: ~{srv-api/srv-url}
               HTML5.DynamicDestination: true
+              HTML5.ForwardAuthToken: true
+              HTML5.Timeout: 60000
               WebIDEEnabled: true
               WebIDEUsage: odata_gen
               sap.cloud.service: o2c.order.to.cash

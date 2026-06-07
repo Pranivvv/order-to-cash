@@ -6,10 +6,6 @@
     "redirect-uris": [
       "http://localhost:5000/login/callback",
       "https://*/login/callback"
-    ],
-    "post-logout-redirect-uris": [
-      "http://localhost:5000/logout.html",
-      "https://*/logout.html"
     ]
   },
   "scopes": [

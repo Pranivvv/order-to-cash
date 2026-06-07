@@ -588,7 +588,7 @@ Completed:
 - Added approuter logout endpoint `/logout` and logout page `/logout.html`.
 - Added cockpit Logout button that uses approuter logout outside local CAP direct mode.
 - Added `mta.yaml` with CAP service, approuter, XSUAA resource, and auth-token forwarding destination.
-- Added OAuth redirect and post-logout redirect URI configuration to `xs-security.json`.
+- Added OAuth login redirect URI configuration to `xs-security.json`.
 - Added Node 22 engine metadata for CAP and approuter modules.
 - Added `docs/security.md` with local users, role collections, logout behavior, and deployment steps.
 

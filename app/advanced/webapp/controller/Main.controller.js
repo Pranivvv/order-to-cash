@@ -1,11 +1,8 @@
 sap.ui.define([
   "o2c/advanced/controller/BaseController",
   "sap/ui/model/json/JSONModel",
-  "sap/ui/model/Filter",
-  "sap/ui/model/FilterOperator",
-  "sap/ui/model/Sorter",
   "sap/m/MessageToast"
-], function (BaseController, JSONModel, Filter, FilterOperator, Sorter, MessageToast) {
+], function (BaseController, JSONModel, MessageToast) {
   "use strict";
 
   const currencyRates = {
@@ -22,6 +19,11 @@ sap.ui.define([
 
     onRefresh: function () {
       this.loadOrders();
+    },
+
+    onSearchOrders: function (event) {
+      this.getViewModel().setProperty("/filters/query", event.getParameter("query") || event.getParameter("newValue") || "");
+      this.applyOrderFilters();
     },
 
     onOpenCreateDialog: async function () {
@@ -191,26 +193,143 @@ sap.ui.define([
     },
 
     onFilterConfirm: function (event) {
-      const table = this.byId("ordersTable");
-      const binding = table.getBinding("items");
       const params = event.getParameters();
-      const filters = [];
+      const sortItem = params.sortItem;
+      const statusKeys = [
+        "Draft",
+        "Submitted",
+        "Approved",
+        "Rejected",
+        "InDelivery",
+        "Invoiced",
+        "Paid",
+        "Cancelled"
+      ];
+      const filters = {
+        statuses: [],
+        dateRange: ""
+      };
 
-      params.filterItems.forEach(function (item) {
-        filters.push(new Filter("status", FilterOperator.EQ, item.getKey()));
+      (params.filterItems || []).forEach(function (item) {
+        const key = item.getKey();
+        if (statusKeys.includes(key)) {
+          filters.statuses.push(key);
+        } else {
+          filters.dateRange = key;
+        }
       });
 
-      const sortItem = params.sortItem;
-      const sorters = sortItem ? [new Sorter(sortItem.getKey(), params.sortDescending)] : [];
-
-      binding.filter(filters.length ? [new Filter({ filters: filters, and: false })] : []);
-      binding.sort(sorters);
+      this.getViewModel().setProperty("/filters/statuses", filters.statuses);
+      this.getViewModel().setProperty("/filters/dateRange", filters.dateRange);
+      this.getViewModel().setProperty("/filters/sortKey", sortItem ? sortItem.getKey() : "orderDate");
+      this.getViewModel().setProperty("/filters/sortDescending", params.sortDescending === undefined ? true : !!params.sortDescending);
+      this.applyOrderFilters();
     },
 
     onFilterReset: function () {
-      const binding = this.byId("ordersTable").getBinding("items");
-      binding.filter([]);
-      binding.sort([]);
+      this.getViewModel().setProperty("/filters", {
+        query: this.getViewModel().getProperty("/filters/query") || "",
+        statuses: [],
+        dateRange: "",
+        sortKey: "orderDate",
+        sortDescending: true
+      });
+      this.applyOrderFilters();
+    },
+
+    applyOrderFilters: function () {
+      const model = this.getViewModel();
+      const filters = model.getProperty("/filters") || {};
+      const query = String(filters.query || "").trim().toLowerCase();
+      const statuses = filters.statuses || [];
+      const dateRange = filters.dateRange || "";
+      const sortKey = filters.sortKey || "orderDate";
+      const sortDescending = filters.sortDescending !== false;
+      let orders = (model.getProperty("/allOrders") || []).slice();
+
+      if (query) {
+        orders = orders.filter(function (order) {
+          return [
+            order.orderNumber,
+            order.customerName,
+            order.salesRep,
+            order.status,
+            order.currency
+          ].some(function (value) {
+            return String(value || "").toLowerCase().includes(query);
+          });
+        });
+      }
+
+      if (statuses.length) {
+        orders = orders.filter(function (order) {
+          return statuses.includes(order.status);
+        });
+      }
+
+      if (dateRange) {
+        orders = orders.filter(function (order) {
+          return this.isOrderInDateRange(order.orderDate, dateRange);
+        }.bind(this));
+      }
+
+      orders.sort(function (left, right) {
+        const leftValue = left[sortKey];
+        const rightValue = right[sortKey];
+        const direction = sortDescending ? -1 : 1;
+
+        if (sortKey === "totalAmount") {
+          return (Number(leftValue || 0) - Number(rightValue || 0)) * direction;
+        }
+
+        return String(leftValue || "").localeCompare(String(rightValue || "")) * direction;
+      });
+
+      model.setProperty("/orders", orders);
+    },
+
+    isOrderInDateRange: function (orderDate, dateRange) {
+      const date = this.parseLocalDate(orderDate);
+      const today = new Date();
+      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+      if (!date) {
+        return false;
+      }
+
+      switch (dateRange) {
+        case "today":
+          return date.getTime() === startOfToday.getTime();
+        case "last7":
+          return date >= this.addDays(startOfToday, -6) && date <= startOfToday;
+        case "last30":
+          return date >= this.addDays(startOfToday, -29) && date <= startOfToday;
+        case "thisMonth":
+          return date >= new Date(today.getFullYear(), today.getMonth(), 1) && date <= startOfToday;
+        case "thisYear":
+          return date >= new Date(today.getFullYear(), 0, 1) && date <= startOfToday;
+        default:
+          return true;
+      }
+    },
+
+    parseLocalDate: function (value) {
+      if (!value) {
+        return null;
+      }
+
+      const parts = String(value).slice(0, 10).split("-").map(Number);
+      if (parts.length !== 3 || parts.some(isNaN)) {
+        return null;
+      }
+
+      return new Date(parts[0], parts[1] - 1, parts[2]);
+    },
+
+    addDays: function (date, days) {
+      const result = new Date(date);
+      result.setDate(result.getDate() + days);
+      return result;
     },
 
     onOrderPress: function (event) {

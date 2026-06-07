@@ -10,7 +10,8 @@
     "test:service": "node test/o2c-service.test.js",
     "test:flow": "node test/o2c-flow.test.js",
     "test:validation": "node test/o2c-validation.test.js",
-    "test:inventory": "node test/o2c-inventory.test.js"
+    "test:inventory": "node test/o2c-inventory.test.js",
+    "test:auth": "node test/o2c-auth.test.js"
   },
   "dependencies": {
     "@cap-js/sqlite": "^2",
@@ -26,6 +27,43 @@
         "kind": "sqlite",
         "credentials": {
           "url": "db.sqlite"
+        }
+      },
+      "auth": {
+        "[development]": {
+          "kind": "mocked",
+          "users": {
+            "salesrep": {
+              "password": "pass",
+              "roles": [
+                "SalesRep"
+              ]
+            },
+            "manager": {
+              "password": "pass",
+              "roles": [
+                "SalesManager"
+              ]
+            },
+            "finance": {
+              "password": "pass",
+              "roles": [
+                "FinanceUser"
+              ]
+            },
+            "inventory": {
+              "password": "pass",
+              "roles": [
+                "InventoryManager"
+              ]
+            },
+            "admin": {
+              "password": "pass",
+              "roles": [
+                "Admin"
+              ]
+            }
+          }
         }
       }
     }

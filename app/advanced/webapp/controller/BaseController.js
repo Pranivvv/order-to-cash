@@ -20,12 +20,19 @@ sap.ui.define([
       model.setProperty("/error", "");
 
       try {
-        const [orders, customers, products] = await Promise.all([
+        const [user, orders, customers, products] = await Promise.all([
+          this.fetchJson("/api/o2c/currentUser()"),
           this.fetchJson("/api/o2c/SalesOrders?$orderby=orderDate desc"),
           this.fetchJson("/api/o2c/Customers?$orderby=name"),
           this.fetchJson("/api/o2c/Products?$orderby=productCode")
         ]);
-        model.setProperty("/orders", orders.value || []);
+        model.setProperty("/user", user);
+        model.setProperty("/allOrders", orders.value || []);
+        if (typeof this.applyOrderFilters === "function") {
+          this.applyOrderFilters();
+        } else {
+          model.setProperty("/orders", orders.value || []);
+        }
         model.setProperty("/customers", customers.value || []);
         model.setProperty("/products", products.value || []);
       } catch (error) {

@@ -2,7 +2,7 @@
 
 ## Scope Guard
 
-- Security configuration, XSUAA, roles, role collections, app-router security, and authorization checks are intentionally deferred.
+- Backend role restrictions and local mock authentication are now enabled. UI role-aware visibility, app-router security, and full BTP XSUAA deployment wiring are deferred.
 - Phase 1 focuses on the CAP data model, OData V4 service, service handlers, seed data, and local service tests.
 - Phase 2 focuses on the Fiori Elements Sales Orders app without user-api role checks.
 
@@ -321,3 +321,257 @@ Deferred:
 - Inventory movement ledger for stock additions.
 - Product creation/editing UI.
 - Security and role restrictions.
+
+## Phase 12 - Backend Roles And Local Mock Auth
+
+Status: Complete
+
+Completed:
+- Enabled CAP service-level authentication with `@(requires: 'authenticated-user')`.
+- Added role restrictions for Customers, Products, SalesOrders, SalesOrderItems, Invoices, Payments, and OrderAnalytics.
+- Added mock development users in `package.json`:
+  - `salesrep` / `pass` with `SalesRep`
+  - `manager` / `pass` with `SalesManager`
+  - `finance` / `pass` with `FinanceUser`
+  - `inventory` / `pass` with `InventoryManager`
+  - `admin` / `pass` with `Admin`
+- Added `xs-security.json` with O2C scopes, role templates, and role collections.
+- Updated existing service, flow, validation, and inventory tests to authenticate.
+- Added `test/o2c-auth.test.js` for role-specific allowed and blocked action coverage.
+- Added `npm run test:auth` script.
+
+Role model:
+- `SalesRep`: read master/order data, create draft orders, create/edit order items, submit orders.
+- `SalesManager`: read orders/invoices/analytics, approve or reject orders, cancel eligible orders.
+- `FinanceUser`: read order/invoice/payment data, create invoices, record payments, read analytics.
+- `InventoryManager`: read products/customers, add product stock.
+- `Admin`: allowed across protected O2C actions.
+
+Verified:
+- All updated test files pass `node --check`.
+- `package.json` and `xs-security.json` parse as valid JSON.
+- `npx cds compile srv --to csn` passes and includes auth annotations.
+- `npm run test:auth` passes.
+- `npm run test:service` passes.
+- `npm run test:validation` passes.
+- `npm run test:inventory` passes.
+- `npm run test:flow` passes.
+
+Deferred:
+- UI role detection and role-based button/menu visibility.
+- App-router and real XSUAA deployment wiring.
+- Role-based browser automation.
+
+## Phase 13 - Role-Aware Freestyle UI
+
+Status: Complete
+
+Completed:
+- Added `currentUser()` function to `O2CService` for UI role capability checks.
+- Implemented `currentUser()` handler with capability booleans for create order, submit, approve, reject, cancel, invoice, payment, stock add, analytics, and admin.
+- Updated Advanced UI model loading to read `currentUser()`.
+- Hid Advanced UI `Create Order` unless the user can create orders.
+- Updated Finance UI model loading to read `currentUser()`.
+- Added `canReadFinance` capability to make Finance app access checks explicit.
+- Added Finance UI logged-in user indicator.
+- Added Finance UI pre-check that shows a clear role message before loading invoices when the logged-in user is not FinanceUser/Admin.
+- Hid Finance UI `Record Payment` unless the user can record payments.
+- Disabled Finance UI `Record Payment` when no invoice is selected or the selected invoice is already paid.
+- Updated Inventory UI model loading to read `currentUser()`.
+- Hid Inventory row-level `Add Stock` unless the user can add stock.
+- Extended `test/o2c-auth.test.js` to verify `currentUser()` capability flags.
+- Updated `docs/user-flow.md` with role-aware UI behavior.
+
+Verified:
+- `node --check srv/o2c-service.js` passes.
+- `node --check app/advanced/webapp/controller/BaseController.js` passes.
+- `node --check app/finance/webapp/controller/Invoices.controller.js` passes.
+- `node --check app/inventory/webapp/controller/Products.controller.js` passes.
+- `node --check test/o2c-auth.test.js` passes.
+- Advanced, Finance, and Inventory XML views parse successfully.
+- `npx cds compile srv --to csn` passes.
+- `npm run test:auth` passes.
+- `npm run test:service` passes.
+- `npm run test:flow` passes.
+- `npm run test:validation` passes.
+- `npm run test:inventory` passes.
+- CAP returns HTTP 200 for `currentUser()` and updated freestyle UI resources.
+
+Deferred:
+- Fiori Elements Sales Orders role-aware action visibility.
+- App-router and real XSUAA deployment wiring.
+- Browser automation proving buttons are hidden for each mock user.
+
+## Phase 14 - Role-Aware Cockpit Login
+
+Status: Complete
+
+Completed:
+- Updated local cockpit `app/index.html` to call `/api/o2c/currentUser()` on page load.
+- Moved Basic Auth prompt to cockpit startup instead of first app API request.
+- Added logged-in user display to the cockpit header.
+- Added local mock user guidance to the cockpit page.
+- Hid cockpit app cards based on `currentUser()` capability flags.
+- Updated cockpit app links with fresh cache keys for role-aware app versions.
+- Documented the Basic Auth user-switching caveat in `docs/user-flow.md`.
+
+Verified:
+- Cockpit HTML contains the `currentUser()` startup check.
+- `npm run test:auth` passes.
+- CAP returns HTTP 200 for `/index.html`.
+- CAP returns HTTP 200 for `/api/o2c/currentUser()` with `finance:pass`.
+
+Deferred:
+- Real logout button, which needs app-router/XSUAA logout support.
+
+## Phase 15 - Sales Orders Fiori Elements Action Availability
+
+Status: Complete
+
+Completed:
+- Added virtual SalesOrder action-availability fields:
+  - `canSubmitOrder`
+  - `canApproveOrder`
+  - `canRejectOrder`
+  - `canCancelOrder`
+  - `canCreateInvoice`
+- Populated the availability fields per user role and order status in the CAP service `after READ` handler.
+- Added `@Core.OperationAvailable` annotations to SalesOrder bound actions.
+- Kept backend `@restrict` checks as the final authorization enforcement.
+- Extended `test/o2c-auth.test.js` to verify SalesRep does not get manager/finance action availability while SalesManager does get approve/reject availability.
+
+Verified:
+- `node --check srv/o2c-service.js` passes.
+- `node --check test/o2c-auth.test.js` passes.
+- `npx cds compile srv --to edmx` includes `Core.OperationAvailable` paths for SalesOrder actions.
+- `npm run test:auth` passes.
+- `npm run test:service` passes.
+- `npm run test:flow` passes.
+- `npm run test:validation` passes.
+- `npm run test:inventory` passes.
+
+Deferred:
+- Browser automation proving the Fiori Elements buttons are hidden/disabled visually for each role.
+- Real logout button, which needs app-router/XSUAA logout support.
+
+## Phase 16 - Cockpit Sales Orders Visibility Fix
+
+Status: Complete
+
+Completed:
+- Added `canViewSalesOrders` to `currentUser()`.
+- Updated cockpit Sales Orders card to use `canViewSalesOrders` instead of `canCreateOrder`.
+- Kept Advanced UI tied to `canCreateOrder` because it is a draft creation app.
+- Updated Sales Orders cockpit link cache key to `phase16`.
+- Extended auth test to verify SalesManager can see Sales Orders but cannot create orders.
+
+Verified:
+- `node --check srv/o2c-service.js` passes.
+- `node --check test/o2c-auth.test.js` passes.
+- `npx cds compile srv --to csn` passes.
+- `npm run test:auth` passes.
+
+Deferred:
+- Real logout button, which needs app-router/XSUAA logout support.
+
+## Phase 17 - UI Search and Filter Fixes
+
+Status: Complete
+
+Completed:
+- Added a Sales Orders search field to the Advanced UI.
+- Reworked Advanced UI search, status filtering, and sorting to derive visible rows from `/allOrders`.
+- Reworked Inventory search to derive visible rows from `/allProducts`.
+- Bound search fields to model state so refresh keeps the current search text.
+- Kept service authorization unchanged.
+
+Verified:
+- `node --check app/advanced/webapp/controller/Main.controller.js` passes.
+- `node --check app/advanced/webapp/controller/BaseController.js` passes.
+- `node --check app/advanced/webapp/Component.js` passes.
+- `node --check app/inventory/webapp/controller/Products.controller.js` passes.
+- `node --check app/inventory/webapp/Component.js` passes.
+- Advanced and Inventory XML views/fragments parse successfully.
+- `npm run test:auth` passes.
+- `npm run test:inventory` passes.
+
+Browser checks needed:
+- Advanced UI: search by order number/customer/status, then combine with the Status filter.
+- Inventory UI: search by product code, description, category, or currency.
+
+## Phase 18 - Advanced UI Status And Date Filter Options
+
+Status: Complete
+
+Completed:
+- Added explicit Order Date filter options to the Advanced UI filter dialog:
+  - Today
+  - Last 7 Days
+  - Last 30 Days
+  - This Month
+  - This Year
+- Kept the existing status options as a separate multi-select filter group.
+- Updated filter handling so status selections and date selections are processed separately.
+- Added client-side date range matching for `orderDate`.
+
+Verified:
+- `node --check app/advanced/webapp/controller/Main.controller.js` passes.
+- `node --check app/advanced/webapp/Component.js` passes.
+- Advanced status/date filter XML parses successfully.
+- `npm run test:auth` passes.
+
+Browser checks needed:
+- Advanced UI: open Filter, select one or more Status values, and confirm.
+- Advanced UI: open Filter, select one Order Date option, and confirm.
+- Advanced UI: combine Status plus Order Date and verify the order table narrows correctly.
+
+## Phase 19 - Sales Orders Filter Value Lists
+
+Status: Complete
+
+Completed:
+- Added fixed value-list options for Sales Orders `status`.
+- Added a Sales Orders `Date Range` filter field with preset values:
+  - Today
+  - Last 7 Days
+  - Last 30 Days
+  - This Month
+  - This Year
+- Added `SalesOrderStatuses` and `SalesOrderDateRanges` value-list entities to the OData service.
+- Added CAP filtering logic that converts selected Date Range presets into `orderDate` conditions.
+- Updated the cockpit Sales Orders link cache key to `phase19`.
+
+Verified:
+- `node --check srv/o2c-service.js` passes.
+- `npx cds compile srv --to csn` passes.
+- `npx cds compile srv --to edmx` exposes the new value-list entity sets.
+- `npm run test:auth` passes.
+- `npm run test:service` passes.
+- Local OData check returns 8 status options and 5 date options.
+- Local OData check for `SalesOrders?$filter=dateRange eq 'thisYear'` returns data.
+
+Browser checks needed:
+- Sales Orders app: open Adapt Filters or the filter value help for Status and confirm the status options appear.
+- Sales Orders app: add/select Date Range and confirm the five preset date options appear.
+- Sales Orders app: combine Status plus Date Range and verify the list report narrows correctly.
+
+## Phase 20 - Inventory Low Stock Threshold Fix
+
+Status: Complete
+
+Completed:
+- Centralized the Inventory low-stock threshold in the inventory model.
+- Raised the threshold from `10` to `100` so stock that is low but not zero still shows warning.
+- Updated the Low Stock KPI to use the shared threshold.
+- Updated table stock/status styling to use the shared threshold.
+- Updated the cockpit Inventory link cache key to `phase20`.
+
+Verified:
+- `node --check app/inventory/webapp/controller/Products.controller.js` passes.
+- `node --check app/inventory/webapp/Component.js` passes.
+- Inventory Products XML parses successfully.
+- `npm run test:inventory` passes.
+
+Browser checks needed:
+- Inventory UI: Product stock `50` and `100` should show `Low Stock`.
+- Inventory UI: Low Stock KPI should count products at or below `100`.

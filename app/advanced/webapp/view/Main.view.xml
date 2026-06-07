@@ -6,7 +6,8 @@
   displayBlock="true">
   <Page title="{i18n>mainTitle}" busy="{view>/busy}">
     <headerContent>
-      <Button text="{i18n>createOrder}" type="Emphasized" icon="sap-icon://add" press="onOpenCreateDialog" />
+      <SearchField width="18rem" value="{view>/filters/query}" placeholder="{i18n>searchOrders}" search="onSearchOrders" liveChange="onSearchOrders" />
+      <Button text="{i18n>createOrder}" type="Emphasized" icon="sap-icon://add" press="onOpenCreateDialog" visible="{view>/user/canCreateOrder}" />
       <Button text="{i18n>filter}" icon="sap-icon://filter" press="onOpenFilter" />
       <Button text="{i18n>refresh}" icon="sap-icon://refresh" press="onRefresh" />
     </headerContent>

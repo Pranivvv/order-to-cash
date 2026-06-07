@@ -4,7 +4,8 @@
   <ViewSettingsDialog
     id="statusFilterDialog"
     confirm="onFilterConfirm"
-    reset="onFilterReset">
+    reset="onFilterReset"
+    sortDescending="true">
     <filterItems>
       <ViewSettingsFilterItem key="status" text="Status" multiSelect="true">
         <items>
@@ -16,6 +17,15 @@
           <ViewSettingsItem key="Invoiced" text="Invoiced" />
           <ViewSettingsItem key="Paid" text="Paid" />
           <ViewSettingsItem key="Cancelled" text="Cancelled" />
+        </items>
+      </ViewSettingsFilterItem>
+      <ViewSettingsFilterItem key="dateRange" text="Order Date" multiSelect="false">
+        <items>
+          <ViewSettingsItem key="today" text="Today" />
+          <ViewSettingsItem key="last7" text="Last 7 Days" />
+          <ViewSettingsItem key="last30" text="Last 30 Days" />
+          <ViewSettingsItem key="thisMonth" text="This Month" />
+          <ViewSettingsItem key="thisYear" text="This Year" />
         </items>
       </ViewSettingsFilterItem>
     </filterItems>

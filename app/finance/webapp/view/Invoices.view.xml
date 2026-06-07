@@ -6,7 +6,14 @@
   displayBlock="true">
   <Page title="{i18n>invoicesTitle}" busy="{finance>/busy}">
     <headerContent>
-      <Button text="{i18n>recordPayment}" type="Emphasized" icon="sap-icon://payment-approval" press="onOpenPaymentDialog" />
+      <ObjectStatus text="{= 'User: ' + ${finance>/user/id} }" state="Information" />
+      <Button
+        text="{i18n>recordPayment}"
+        type="Emphasized"
+        icon="sap-icon://payment-approval"
+        press="onOpenPaymentDialog"
+        visible="{finance>/user/canRecordPayment}"
+        enabled="{= !!${finance>/selectedInvoice/ID} &amp;&amp; ${finance>/selectedInvoice/status} !== 'Paid' }" />
       <Button text="{i18n>refresh}" icon="sap-icon://refresh" press="onRefresh" />
     </headerContent>
     <content>

@@ -21,6 +21,18 @@
         padding: 1.5rem 2rem;
       }
 
+      header p {
+        margin: 0.35rem 0;
+      }
+
+      .user {
+        background: rgba(255, 255, 255, 0.16);
+        border-radius: 6px;
+        display: inline-block;
+        margin-top: 0.5rem;
+        padding: 0.35rem 0.6rem;
+      }
+
       main {
         margin: 0 auto;
         max-width: 1120px;
@@ -41,6 +53,10 @@
         padding: 1rem;
       }
 
+      .card[hidden] {
+        display: none;
+      }
+
       .card h2 {
         font-size: 1.1rem;
         margin: 0 0 0.5rem;
@@ -56,39 +72,57 @@
         font-weight: 600;
         text-decoration: none;
       }
+
+      .message {
+        background: #fff;
+        border: 1px solid #d9d9d9;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        padding: 1rem;
+      }
+
+      .error {
+        border-color: #bb0000;
+        color: #bb0000;
+      }
     </style>
   </head>
   <body>
     <header>
       <h1>Order to Cash</h1>
-      <p>Local CAP cockpit for Phase 5 end-to-end verification.</p>
+      <p>Local CAP cockpit for role-based app access.</p>
+      <p id="userInfo" class="user">Checking login...</p>
     </header>
     <main>
+      <section id="message" class="message">
+        Login with one of the local mock users. Password is <strong>pass</strong> for all users:
+        salesrep, manager, finance, inventory, admin.
+      </section>
       <section class="grid">
-        <article class="card">
+        <article class="card" data-can="canViewSalesOrders">
           <h2>Sales Orders</h2>
           <p>Fiori Elements list and object page for the O2C sales order service.</p>
-          <a href="/salesorders/webapp/index.html?fresh=phase5&sap-ui-xx-componentPreload=off">Open app</a>
+          <a href="/salesorders/webapp/index.html?fresh=phase19&sap-ui-xx-componentPreload=off">Open app</a>
         </article>
-        <article class="card">
+        <article class="card" data-can="canViewAnalytics">
           <h2>Analytics</h2>
           <p>KPI overview, monthly revenue chart, and order status distribution.</p>
           <a href="/analytics/webapp/index.html?fresh=phase5">Open app</a>
         </article>
-        <article class="card">
+        <article class="card" data-can="canReadFinance">
           <h2>Finance</h2>
           <p>Invoice list and Record Payment dialog for moving invoices and orders to Paid.</p>
-          <a href="/finance/webapp/index.html?fresh=phase6">Open app</a>
+          <a href="/finance/webapp/index.html?fresh=phase14">Open app</a>
         </article>
-        <article class="card">
+        <article class="card" data-can="canAddStock">
           <h2>Inventory</h2>
           <p>Product stock overview with price, category, availability, and low-stock status.</p>
-          <a href="/inventory/webapp/index.html?fresh=phase11">Open app</a>
+          <a href="/inventory/webapp/index.html?fresh=phase20">Open app</a>
         </article>
-        <article class="card">
+        <article class="card" data-can="canCreateOrder">
           <h2>Advanced UI</h2>
           <p>Create stock-aware draft orders, use custom controls, and export orders.</p>
-          <a href="/advanced/webapp/index.html?fresh=phase11">Open app</a>
+          <a href="/advanced/webapp/index.html?fresh=phase14">Open app</a>
         </article>
         <article class="card">
           <h2>OData Service</h2>
@@ -97,5 +131,36 @@
         </article>
       </section>
     </main>
+    <script>
+      (async function () {
+        const userInfo = document.getElementById("userInfo");
+        const message = document.getElementById("message");
+
+        try {
+          const response = await fetch("/api/o2c/currentUser()", {
+            headers: {
+              "accept": "application/json"
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`Login failed with HTTP ${response.status}`);
+          }
+
+          const user = await response.json();
+          userInfo.textContent = `Logged in as ${user.id}`;
+          message.textContent = "Only apps available to the logged-in role are shown below.";
+
+          document.querySelectorAll("[data-can]").forEach(function (card) {
+            const permission = card.getAttribute("data-can");
+            card.hidden = !user.isAdmin && !user[permission];
+          });
+        } catch (error) {
+          userInfo.textContent = "Not logged in";
+          message.classList.add("error");
+          message.textContent = `${error.message}. Refresh and login with salesrep, manager, finance, inventory, or admin. Password: pass.`;
+        }
+      }());
+    </script>
   </body>
 </html>

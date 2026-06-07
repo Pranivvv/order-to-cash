@@ -3,6 +3,11 @@ const { execFileSync, spawn } = require('node:child_process');
 
 const base = 'http://localhost:4004';
 const service = `${base}/api/o2c`;
+const auth = {
+  salesrep: basicAuth('salesrep'),
+  manager: basicAuth('manager'),
+  finance: basicAuth('finance')
+};
 
 async function main() {
   const server = spawn(process.execPath, ['node_modules/@sap/cds-dk/bin/cds.js', 'serve', '--port', '4004'], {
@@ -20,8 +25,8 @@ async function main() {
     await expectOk('/inventory/webapp/index.html');
     await expectOk('/advanced/webapp/index.html');
 
-    const customers = await get('/Customers?$top=1');
-    const products = await get('/Products?$top=1');
+    const customers = await get('/Customers?$top=1', auth.salesrep);
+    const products = await get('/Products?$top=1', auth.salesrep);
     assert.ok(customers.value[0], 'At least one customer is required');
     assert.ok(products.value[0], 'At least one product is required');
 
@@ -31,7 +36,7 @@ async function main() {
       currency: 'EUR',
       salesRep: 'Phase 5 Flow Test',
       notes: 'Created by automated end-to-end flow'
-    });
+    }, auth.salesrep);
     assert.equal(created.status, 'Draft');
 
     const item = await post('/SalesOrderItems', {
@@ -39,16 +44,16 @@ async function main() {
       product_ID: products.value[0].ID,
       quantity: 1,
       unitPrice: 46000
-    });
+    }, auth.salesrep);
     assert.equal(Number(item.lineTotal), 46000, 'Line total should use the selected currency unit price');
 
-    const submitted = await post(`/SalesOrders(${created.ID})/O2CService.submitOrder`, {});
+    const submitted = await post(`/SalesOrders(${created.ID})/O2CService.submitOrder`, {}, auth.salesrep);
     assert.equal(submitted.status, 'Submitted');
 
-    const approved = await post(`/SalesOrders(${created.ID})/O2CService.approveOrder`, {});
+    const approved = await post(`/SalesOrders(${created.ID})/O2CService.approveOrder`, {}, auth.manager);
     assert.equal(approved.status, 'Approved');
 
-    const invoice = await post(`/SalesOrders(${created.ID})/O2CService.createInvoice`, {});
+    const invoice = await post(`/SalesOrders(${created.ID})/O2CService.createInvoice`, {}, auth.finance);
     assert.equal(invoice.status, 'Open');
     assert.equal(invoice.currency, 'EUR');
     assert.equal(Number(invoice.totalAmount), 46000, 'Invoice should inherit the converted order total');
@@ -57,10 +62,10 @@ async function main() {
       amount: Number(invoice.totalAmount),
       method: 'Wire',
       reference: 'PHASE5-FLOW'
-    });
+    }, auth.finance);
     assert.equal(paid.status, 'Paid');
 
-    const analytics = await get('/OrderAnalytics');
+    const analytics = await get('/OrderAnalytics', auth.finance);
     assert.ok(Array.isArray(analytics.value), 'Order analytics should remain readable');
 
     console.log('Phase 5 O2C end-to-end flow test passed');
@@ -78,7 +83,7 @@ async function waitForService(server) {
     }
 
     try {
-      const response = await fetch(`${service}/`);
+      const response = await fetch(`${service}/`, { headers: authHeaders(auth.salesrep) });
       if (response.ok) return;
     } catch {
       // Wait until CAP is listening.
@@ -95,16 +100,16 @@ async function expectOk(path) {
   assert.equal(response.status, 200, `${path} should return HTTP 200`);
 }
 
-async function get(path) {
-  const response = await fetch(service + path);
+async function get(path, authorization) {
+  const response = await fetch(service + path, { headers: authHeaders(authorization) });
   assert.equal(response.status, 200, `${path} should return HTTP 200`);
   return response.json();
 }
 
-async function post(path, body) {
+async function post(path, body, authorization) {
   const response = await fetch(service + path, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: authHeaders(authorization),
     body: JSON.stringify(body)
   });
 
@@ -113,6 +118,18 @@ async function post(path, body) {
   }
 
   return response.json();
+}
+
+function basicAuth(user, password = 'pass') {
+  return `Basic ${Buffer.from(`${user}:${password}`).toString('base64')}`;
+}
+
+function authHeaders(authorization) {
+  return {
+    authorization,
+    'accept': 'application/json',
+    'content-type': 'application/json'
+  };
 }
 
 function stopServer(server) {

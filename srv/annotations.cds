@@ -10,6 +10,7 @@ annotate O2CService.SalesOrders with @(
   UI.SelectionFields: [
     status,
     orderDate,
+    dateRange,
     customer_ID,
     salesRep
   ],
@@ -91,6 +92,29 @@ annotate O2CService.SalesOrders with @(
       Target: 'items/@UI.LineItem'
     }
   ]
+);
+
+annotate O2CService.SalesOrders:status with @(
+  Common.ValueListWithFixedValues: true,
+  Common.ValueList: {
+    CollectionPath: 'SalesOrderStatuses',
+    Parameters: [
+      { $Type: 'Common.ValueListParameterInOut', LocalDataProperty: status, ValueListProperty: 'code' },
+      { $Type: 'Common.ValueListParameterDisplayOnly', ValueListProperty: 'name' }
+    ]
+  }
+);
+
+annotate O2CService.SalesOrders:dateRange with @(
+  Common.Label: 'Date Range',
+  Common.ValueListWithFixedValues: true,
+  Common.ValueList: {
+    CollectionPath: 'SalesOrderDateRanges',
+    Parameters: [
+      { $Type: 'Common.ValueListParameterInOut', LocalDataProperty: dateRange, ValueListProperty: 'code' },
+      { $Type: 'Common.ValueListParameterDisplayOnly', ValueListProperty: 'name' }
+    ]
+  }
 );
 
 annotate O2CService.SalesOrderItems with @(

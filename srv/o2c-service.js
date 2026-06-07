@@ -11,7 +11,23 @@ const addDays = (date, days) => {
 const getId = (req) => req.params?.[0]?.ID;
 
 module.exports = cds.service.impl(async function () {
-  const { Customers, Products, SalesOrders, SalesOrderItems, Invoices, Payments } = this.entities;
+  const {
+    Customers,
+    Products,
+    SalesOrders,
+    SalesOrderItems,
+    Invoices,
+    Payments,
+    SalesOrderStatuses,
+    SalesOrderDateRanges
+  } = this.entities;
+
+  this.on('READ', SalesOrderStatuses, () => salesOrderStatuses());
+  this.on('READ', SalesOrderDateRanges, () => salesOrderDateRanges());
+
+  this.before('READ', SalesOrders, (req) => {
+    applySalesOrderDateRangeFilter(req);
+  });
 
   this.before('CREATE', SalesOrders, async (req) => {
     if (!req.data.customer_ID) return req.error(400, 'Customer is required');
@@ -81,6 +97,22 @@ module.exports = cds.service.impl(async function () {
   this.after(['CREATE', 'UPDATE'], SalesOrderItems, async (item, req) => {
     const orderID = item?.order_ID || req.data?.order_ID;
     if (orderID) await updateOrderTotal(SalesOrderItems, SalesOrders, orderID);
+  });
+
+  this.after('READ', SalesOrders, (orders, req) => {
+    const rows = Array.isArray(orders) ? orders : [orders];
+    const permissions = userPermissions(req.user);
+
+    for (const order of rows) {
+      if (!order) continue;
+
+      order.dateRange = '';
+      order.canSubmitOrder = permissions.canSubmitOrder && order.status === 'Draft';
+      order.canApproveOrder = permissions.canApproveOrder && ['Draft', 'Submitted'].includes(order.status);
+      order.canRejectOrder = permissions.canRejectOrder && !['Invoiced', 'Paid', 'Rejected', 'Cancelled'].includes(order.status);
+      order.canCancelOrder = permissions.canCancelOrder && !['Invoiced', 'Paid', 'Cancelled'].includes(order.status);
+      order.canCreateInvoice = permissions.canCreateInvoice && order.status === 'Approved';
+    }
   });
 
   this.on('blockCustomer', Customers, async (req) => {
@@ -273,7 +305,176 @@ module.exports = cds.service.impl(async function () {
 
     return [...months.values()].sort((left, right) => left.month - right.month);
   });
+
+  this.on('currentUser', (req) => {
+    return {
+      id: req.user.id,
+      ...userPermissions(req.user)
+    };
+  });
 });
+
+function salesOrderStatuses() {
+  return [
+    { code: 'Draft', name: 'Draft' },
+    { code: 'Submitted', name: 'Submitted' },
+    { code: 'Approved', name: 'Approved' },
+    { code: 'Rejected', name: 'Rejected' },
+    { code: 'InDelivery', name: 'In Delivery' },
+    { code: 'Invoiced', name: 'Invoiced' },
+    { code: 'Paid', name: 'Paid' },
+    { code: 'Cancelled', name: 'Cancelled' }
+  ];
+}
+
+function salesOrderDateRanges() {
+  return [
+    { code: 'today', name: 'Today' },
+    { code: 'last7', name: 'Last 7 Days' },
+    { code: 'last30', name: 'Last 30 Days' },
+    { code: 'thisMonth', name: 'This Month' },
+    { code: 'thisYear', name: 'This Year' }
+  ];
+}
+
+function applySalesOrderDateRangeFilter(req) {
+  const select = req.query?.SELECT;
+  if (!select?.where) return;
+
+  const extracted = extractDateRangeFilter(select.where);
+  if (!extracted.dateRange) return;
+
+  const range = dateRangeBounds(extracted.dateRange);
+  select.where = extracted.where;
+
+  if (!range) return;
+  if (select.where.length) select.where.push('and');
+  select.where.push(
+    { ref: ['orderDate'] },
+    '>=',
+    { val: range.from },
+    'and',
+    { ref: ['orderDate'] },
+    '<=',
+    { val: range.to }
+  );
+}
+
+function extractDateRangeFilter(where) {
+  const result = [];
+  let dateRange = '';
+
+  for (let index = 0; index < where.length; index++) {
+    const token = where[index];
+
+    if (token?.xpr) {
+      const nested = extractDateRangeFilter(token.xpr);
+      dateRange ||= nested.dateRange;
+      if (nested.where.length) result.push({ xpr: nested.where });
+      continue;
+    }
+
+    if (isDateRangeRef(token) && isEqualsOperator(where[index + 1])) {
+      dateRange = literalValue(where[index + 2]);
+      index += 2;
+      continue;
+    }
+
+    result.push(token);
+  }
+
+  return {
+    dateRange,
+    where: cleanupBooleanOperators(result)
+  };
+}
+
+function cleanupBooleanOperators(where) {
+  const cleaned = [];
+
+  for (const token of where) {
+    const isBoolean = token === 'and' || token === 'or';
+    const previous = cleaned[cleaned.length - 1];
+
+    if (isBoolean && (!cleaned.length || previous === 'and' || previous === 'or')) {
+      continue;
+    }
+
+    cleaned.push(token);
+  }
+
+  while (cleaned[cleaned.length - 1] === 'and' || cleaned[cleaned.length - 1] === 'or') {
+    cleaned.pop();
+  }
+
+  return cleaned;
+}
+
+function isDateRangeRef(token) {
+  return token?.ref?.length === 1 && token.ref[0] === 'dateRange';
+}
+
+function isEqualsOperator(token) {
+  return token === '=' || token === 'eq';
+}
+
+function literalValue(token) {
+  return token?.val ?? token;
+}
+
+function dateRangeBounds(dateRange) {
+  const now = new Date();
+  const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayValue = formatDate(todayDate);
+
+  switch (dateRange) {
+    case 'today':
+      return { from: todayValue, to: todayValue };
+    case 'last7':
+      return { from: formatDate(addLocalDays(todayDate, -6)), to: todayValue };
+    case 'last30':
+      return { from: formatDate(addLocalDays(todayDate, -29)), to: todayValue };
+    case 'thisMonth':
+      return { from: formatDate(new Date(now.getFullYear(), now.getMonth(), 1)), to: todayValue };
+    case 'thisYear':
+      return { from: formatDate(new Date(now.getFullYear(), 0, 1)), to: todayValue };
+    default:
+      return null;
+  }
+}
+
+function addLocalDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function userPermissions(user) {
+  const isAdmin = user.is('Admin');
+  const has = (role) => isAdmin || user.is(role);
+
+  return {
+    canViewSalesOrders: has('SalesRep') || has('SalesManager') || has('FinanceUser'),
+    canCreateOrder: has('SalesRep'),
+    canSubmitOrder: has('SalesRep'),
+    canApproveOrder: has('SalesManager'),
+    canRejectOrder: has('SalesManager'),
+    canCancelOrder: has('SalesRep') || has('SalesManager'),
+    canCreateInvoice: has('FinanceUser'),
+    canReadFinance: has('FinanceUser'),
+    canRecordPayment: has('FinanceUser'),
+    canAddStock: has('InventoryManager'),
+    canViewAnalytics: has('SalesManager') || has('FinanceUser'),
+    isAdmin
+  };
+}
 
 function calculateLineTotal(data) {
   if (!data.quantity || !data.unitPrice) return;

@@ -1,0 +1,100 @@
+{
+  "xsappname": "o2c-cap-app",
+  "tenant-mode": "dedicated",
+  "description": "Order to Cash role security descriptor",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.SalesRep",
+      "description": "Create and submit sales orders"
+    },
+    {
+      "name": "$XSAPPNAME.SalesManager",
+      "description": "Review, approve, reject, and cancel sales orders"
+    },
+    {
+      "name": "$XSAPPNAME.FinanceUser",
+      "description": "Create invoices and record payments"
+    },
+    {
+      "name": "$XSAPPNAME.InventoryManager",
+      "description": "View products and add product stock"
+    },
+    {
+      "name": "$XSAPPNAME.Admin",
+      "description": "Full Order to Cash administrative access"
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "SalesRep",
+      "description": "Sales representative",
+      "scope-references": [
+        "$XSAPPNAME.SalesRep"
+      ]
+    },
+    {
+      "name": "SalesManager",
+      "description": "Sales manager",
+      "scope-references": [
+        "$XSAPPNAME.SalesManager"
+      ]
+    },
+    {
+      "name": "FinanceUser",
+      "description": "Finance user",
+      "scope-references": [
+        "$XSAPPNAME.FinanceUser"
+      ]
+    },
+    {
+      "name": "InventoryManager",
+      "description": "Inventory manager",
+      "scope-references": [
+        "$XSAPPNAME.InventoryManager"
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Administrator",
+      "scope-references": [
+        "$XSAPPNAME.Admin",
+        "$XSAPPNAME.SalesRep",
+        "$XSAPPNAME.SalesManager",
+        "$XSAPPNAME.FinanceUser",
+        "$XSAPPNAME.InventoryManager"
+      ]
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "O2C_SalesRep",
+      "role-template-references": [
+        "$XSAPPNAME.SalesRep"
+      ]
+    },
+    {
+      "name": "O2C_SalesManager",
+      "role-template-references": [
+        "$XSAPPNAME.SalesManager"
+      ]
+    },
+    {
+      "name": "O2C_FinanceUser",
+      "role-template-references": [
+        "$XSAPPNAME.FinanceUser"
+      ]
+    },
+    {
+      "name": "O2C_InventoryManager",
+      "role-template-references": [
+        "$XSAPPNAME.InventoryManager"
+      ]
+    },
+    {
+      "name": "O2C_Admin",
+      "role-template-references": [
+        "$XSAPPNAME.Admin"
+      ]
+    }
+  ]
+}

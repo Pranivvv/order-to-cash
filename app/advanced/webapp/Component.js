@@ -13,11 +13,19 @@ sap.ui.define([
       UIComponent.prototype.init.apply(this, arguments);
 
       this.setModel(new JSONModel({
+        allOrders: [],
         orders: [],
         customers: [],
         products: [],
+        user: {},
         selectedOrder: null,
-        statusFilters: [],
+        filters: {
+          query: "",
+          statuses: [],
+          dateRange: "",
+          sortKey: "orderDate",
+          sortDescending: true
+        },
         busy: false,
         error: ""
       }), "view");

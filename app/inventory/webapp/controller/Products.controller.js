@@ -1,10 +1,8 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/ui/model/json/JSONModel",
-  "sap/ui/model/Filter",
-  "sap/ui/model/FilterOperator",
   "sap/m/MessageToast"
-], function (Controller, JSONModel, Filter, FilterOperator, MessageToast) {
+], function (Controller, JSONModel, MessageToast) {
   "use strict";
 
   return Controller.extend("o2c.inventory.controller.Products", {
@@ -22,17 +20,23 @@ sap.ui.define([
       model.setProperty("/error", "");
 
       try {
-        const data = await this.fetchJson("/api/o2c/Products?$orderby=productCode");
+        const [user, data] = await Promise.all([
+          this.fetchJson("/api/o2c/currentUser()"),
+          this.fetchJson("/api/o2c/Products?$orderby=productCode")
+        ]);
         const products = data.value || [];
+        const lowStockThreshold = Number(model.getProperty("/lowStockThreshold") || 100);
 
-        model.setProperty("/products", products);
+        model.setProperty("/user", user);
+        model.setProperty("/allProducts", products);
+        this.applyProductSearch();
         model.setProperty("/summary", {
           productCount: products.length,
           totalStock: products.reduce(function (sum, product) {
             return sum + Number(product.stockQuantity || 0);
           }, 0),
           lowStockCount: products.filter(function (product) {
-            return Number(product.stockQuantity || 0) <= 10;
+            return Number(product.stockQuantity || 0) <= lowStockThreshold;
           }).length
         });
       } catch (error) {
@@ -45,26 +49,39 @@ sap.ui.define([
 
     onSearch: function (event) {
       const query = event.getParameter("query") || event.getParameter("newValue") || "";
-      const binding = this.byId("productsTable").getBinding("items");
+      this.getOwnerComponent().getModel("inventory").setProperty("/searchQuery", query);
+      this.applyProductSearch();
+    },
+
+    applyProductSearch: function () {
+      const model = this.getOwnerComponent().getModel("inventory");
+      const query = String(model.getProperty("/searchQuery") || "").trim().toLowerCase();
+      const products = model.getProperty("/allProducts") || [];
 
       if (!query) {
-        binding.filter([]);
+        model.setProperty("/products", products);
         return;
       }
 
-      binding.filter([
-        new Filter({
-          filters: [
-            new Filter("productCode", FilterOperator.Contains, query),
-            new Filter("description", FilterOperator.Contains, query),
-            new Filter("category", FilterOperator.Contains, query)
-          ],
-          and: false
-        })
-      ]);
+      model.setProperty("/products", products.filter(function (product) {
+        return [
+          product.productCode,
+          product.description,
+          product.category,
+          product.currency
+        ].some(function (value) {
+          return String(value || "").toLowerCase().includes(query);
+        });
+      }));
     },
 
     onOpenAddStockDialog: async function (event) {
+      const user = this.getOwnerComponent().getModel("inventory").getProperty("/user") || {};
+      if (!user.canAddStock) {
+        MessageToast.show("You are not allowed to add stock");
+        return;
+      }
+
       const product = event.getSource().getBindingContext("inventory").getObject();
 
       if (!this._addStockDialog) {

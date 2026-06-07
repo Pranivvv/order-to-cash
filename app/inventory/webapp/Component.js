@@ -13,7 +13,11 @@ sap.ui.define([
       UIComponent.prototype.init.apply(this, arguments);
 
       this.setModel(new JSONModel({
+        allProducts: [],
         products: [],
+        searchQuery: "",
+        lowStockThreshold: 100,
+        user: {},
         summary: {
           productCount: 0,
           totalStock: 0,

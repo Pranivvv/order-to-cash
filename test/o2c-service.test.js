@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const { execFileSync, spawn } = require('node:child_process');
 
 const base = 'http://localhost:4004/api/o2c';
+const adminAuth = basicAuth('admin');
 
 async function main() {
   const server = spawn(process.execPath, ['node_modules/@sap/cds-dk/bin/cds.js', 'serve', '--port', '4004'], {
@@ -86,7 +87,7 @@ async function waitForService(server) {
     }
 
     try {
-      const response = await fetch(base + '/');
+      const response = await fetch(base + '/', { headers: authHeaders(adminAuth) });
       if (response.ok) return;
     } catch {
       // Keep polling until CAP is listening.
@@ -99,7 +100,7 @@ async function waitForService(server) {
 }
 
 async function get(path) {
-  const response = await fetch(base + path);
+  const response = await fetch(base + path, { headers: authHeaders(adminAuth) });
   assert.equal(response.status, 200, `${path} should return HTTP 200`);
   return response.json();
 }
@@ -107,7 +108,7 @@ async function get(path) {
 async function post(path, body) {
   const response = await fetch(base + path, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: authHeaders(adminAuth),
     body: JSON.stringify(body)
   });
 
@@ -116,6 +117,18 @@ async function post(path, body) {
   }
 
   return response.json();
+}
+
+function basicAuth(user, password = 'pass') {
+  return `Basic ${Buffer.from(`${user}:${password}`).toString('base64')}`;
+}
+
+function authHeaders(authorization) {
+  return {
+    authorization,
+    'accept': 'application/json',
+    'content-type': 'application/json'
+  };
 }
 
 main().then(() => {

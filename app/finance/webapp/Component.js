@@ -15,6 +15,7 @@ sap.ui.define([
       this.setModel(new JSONModel({
         invoices: [],
         payments: [],
+        user: {},
         selectedInvoice: null,
         busy: false,
         error: ""

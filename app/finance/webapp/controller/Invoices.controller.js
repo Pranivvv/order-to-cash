@@ -20,6 +20,17 @@ sap.ui.define([
       model.setProperty("/error", "");
 
       try {
+        const user = await this.fetchJson("/api/o2c/currentUser()");
+        model.setProperty("/user", user);
+
+        if (!user.canReadFinance) {
+          model.setProperty("/invoices", []);
+          model.setProperty("/payments", []);
+          model.setProperty("/selectedInvoice", null);
+          model.setProperty("/error", `Logged in as ${user.id}. FinanceUser or Admin role is required to view invoices.`);
+          return;
+        }
+
         const data = await this.fetchJson("/api/o2c/Invoices?$orderby=invoiceDate desc");
         const invoices = await this.withPaymentTotals(data.value || []);
         model.setProperty("/invoices", invoices);
@@ -87,6 +98,13 @@ sap.ui.define([
 
     onOpenPaymentDialog: async function () {
       const invoice = this.getFinanceModel().getProperty("/selectedInvoice");
+      const user = this.getFinanceModel().getProperty("/user") || {};
+
+      if (!user.canRecordPayment) {
+        MessageToast.show("You are not allowed to record payments");
+        return;
+      }
+
       if (!invoice) {
         MessageToast.show("Select an invoice first");
         return;

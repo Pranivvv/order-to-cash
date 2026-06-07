@@ -1,6 +1,29 @@
 # Order to Cash User Flow
 
-Security and role checks are intentionally deferred. The current local flow uses open CAP endpoints to verify the business process.
+Backend role checks are enabled with local mocked users. The freestyle UIs now also read `currentUser()` and hide or disable supported role-specific actions. The backend remains the source of truth.
+
+## Local Mock Users
+
+Use password `pass` for each local user:
+
+- `salesrep`: `SalesRep`
+- `manager`: `SalesManager`
+- `finance`: `FinanceUser`
+- `inventory`: `InventoryManager`
+- `admin`: `Admin`
+
+## Role-Aware UI Behavior
+
+- Cockpit calls `currentUser()` on page load, so the browser asks for credentials before app selection.
+- Cockpit shows only the app cards available to the logged-in role.
+- Sales Orders cockpit card is visible to users who can view sales orders, including SalesRep, SalesManager, FinanceUser, and Admin.
+- Advanced UI hides `Create Order` unless `currentUser().canCreateOrder` is true.
+- Finance UI hides `Record Payment` unless `currentUser().canRecordPayment` is true.
+- Finance UI disables `Record Payment` when no invoice is selected or the selected invoice is already `Paid`.
+- Inventory UI hides row-level `Add Stock` unless `currentUser().canAddStock` is true.
+- Fiori Elements Sales Orders action buttons use `Core.OperationAvailable` paths from the CAP service, so SalesRep does not receive manager/finance actions as available.
+
+With local mocked Basic Auth, switching users requires a fresh incognito window, clearing site data for `localhost:4004`, or using a different browser.
 
 ## Flow
 
@@ -63,6 +86,7 @@ Run:
 
 ```sh
 npm run test:flow
+npm run test:auth
 ```
 
-The test starts CAP locally, executes the O2C lifecycle over HTTP, and shuts CAP down again.
+The flow test starts CAP locally, executes the O2C lifecycle with role-specific users, and shuts CAP down again. The auth test verifies blocked actions return authorization errors.

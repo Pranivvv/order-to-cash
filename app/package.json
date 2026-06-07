@@ -1,0 +1,14 @@
+{
+  "name": "o2c-approuter",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": "^20 || ^22"
+  },
+  "scripts": {
+    "start": "node node_modules/@sap/approuter/approuter.js"
+  },
+  "dependencies": {
+    "@sap/approuter": "^20"
+  }
+}

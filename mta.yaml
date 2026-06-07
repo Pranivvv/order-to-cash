@@ -30,7 +30,7 @@ modules:
 
   - name: order-to-cash-router
     type: approuter.nodejs
-    path: app/router
+    path: app
     parameters:
       memory: 128M
       keep-existing-routes: true

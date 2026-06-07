@@ -43,6 +43,133 @@ modules:
           url: ~{srv-url}
           forwardAuthToken: true
 
+  - name: order-to-cash-app-content
+    type: com.sap.application.content
+    path: .
+    requires:
+      - name: order-to-cash-html5-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: resources
+      requires:
+        - name: o2c-salesorders
+          artifacts:
+            - o2c-salesorders.zip
+          target-path: resources/
+        - name: o2c-finance
+          artifacts:
+            - o2c-finance.zip
+          target-path: resources/
+        - name: o2c-inventory-ui
+          artifacts:
+            - o2c-inventory-ui.zip
+          target-path: resources/
+        - name: o2c-analytics
+          artifacts:
+            - o2c-analytics.zip
+          target-path: resources/
+        - name: o2c-advanced
+          artifacts:
+            - o2c-advanced.zip
+          target-path: resources/
+
+  - name: order-to-cash-destination-content
+    type: com.sap.application.content
+    requires:
+      - name: order-to-cash-destination
+        parameters:
+          content-target: true
+      - name: order-to-cash-html5-repo-runtime
+        parameters:
+          service-key:
+            name: order-to-cash-html5-repo-runtime-key
+      - name: order-to-cash-auth
+        parameters:
+          service-key:
+            name: order-to-cash-auth-key
+      - name: srv-api
+    parameters:
+      content:
+        subaccount:
+          existing_destinations_policy: update
+          destinations:
+            - Name: order-to-cash-html5-repo
+              ServiceInstanceName: order-to-cash-html5-repo-runtime
+              ServiceKeyName: order-to-cash-html5-repo-runtime-key
+              sap.cloud.service: o2c.order.to.cash
+            - Name: order-to-cash-auth
+              Authentication: OAuth2UserTokenExchange
+              ServiceInstanceName: order-to-cash-auth
+              ServiceKeyName: order-to-cash-auth-key
+              sap.cloud.service: o2c.order.to.cash
+            - Name: order-to-cash-srv
+              Type: HTTP
+              ProxyType: Internet
+              Authentication: OAuth2UserTokenExchange
+              URL: ~{srv-api/srv-url}
+              HTML5.DynamicDestination: true
+              WebIDEEnabled: true
+              WebIDEUsage: odata_gen
+              sap.cloud.service: o2c.order.to.cash
+    build-parameters:
+      no-source: true
+
+  - name: o2c-salesorders
+    type: html5
+    path: app/salesorders
+    build-parameters:
+      build-result: dist
+      supported-platforms: []
+      builder: custom
+      commands:
+        - npm install
+        - npx ui5 build --dest dist
+
+  - name: o2c-finance
+    type: html5
+    path: app/finance
+    build-parameters:
+      build-result: dist
+      supported-platforms: []
+      builder: custom
+      commands:
+        - npm install
+        - npx ui5 build --dest dist
+
+  - name: o2c-inventory-ui
+    type: html5
+    path: app/inventory
+    build-parameters:
+      build-result: dist
+      supported-platforms: []
+      builder: custom
+      commands:
+        - npm install
+        - npx ui5 build --dest dist
+
+  - name: o2c-analytics
+    type: html5
+    path: app/analytics
+    build-parameters:
+      build-result: dist
+      supported-platforms: []
+      builder: custom
+      commands:
+        - npm install
+        - npx ui5 build --dest dist
+
+  - name: o2c-advanced
+    type: html5
+    path: app/advanced
+    build-parameters:
+      build-result: dist
+      supported-platforms: []
+      builder: custom
+      commands:
+        - npm install
+        - npx ui5 build --dest dist
+
 resources:
   - name: order-to-cash-auth
     type: org.cloudfoundry.managed-service
@@ -50,3 +177,21 @@ resources:
       service: xsuaa
       service-plan: application
       path: ./xs-security.json
+
+  - name: order-to-cash-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+
+  - name: order-to-cash-html5-repo-runtime
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime
+
+  - name: order-to-cash-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite

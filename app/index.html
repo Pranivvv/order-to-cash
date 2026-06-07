@@ -101,14 +101,13 @@
   <body>
     <header>
       <h1>Order to Cash</h1>
-      <p>Local CAP cockpit for role-based app access.</p>
+      <p>Role-based app access for the Order to Cash process.</p>
       <p id="userInfo" class="user">Checking login...</p>
       <button id="logoutButton" class="logout" type="button">Logout</button>
     </header>
     <main>
       <section id="message" class="message">
-        Login with one of the local mock users. Password is <strong>pass</strong> for all users:
-        salesrep, manager, finance, inventory, admin.
+        Checking your role assignments and available applications.
       </section>
       <section class="grid">
         <article class="card" data-can="canViewSalesOrders">
@@ -148,9 +147,14 @@
         const userInfo = document.getElementById("userInfo");
         const message = document.getElementById("message");
         const logoutButton = document.getElementById("logoutButton");
+        const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+
+        if (isLocal) {
+          message.innerHTML = "Login with one of the local mock users. Password is <strong>pass</strong> for all users: salesrep, manager, finance, inventory, admin.";
+        }
 
         logoutButton.addEventListener("click", function () {
-          if (location.port === "4004") {
+          if (isLocal && location.port === "4004") {
             alert("Local CAP uses browser Basic Auth. To switch users locally, use Incognito or clear site credentials. Deployed approuter sessions log out through /logout.");
             return;
           }
@@ -180,7 +184,17 @@
         } catch (error) {
           userInfo.textContent = "Not logged in";
           message.classList.add("error");
-          message.textContent = `${error.message}. Refresh and login with salesrep, manager, finance, inventory, or admin. Password: pass.`;
+          document.querySelectorAll("[data-can]").forEach(function (card) {
+            card.hidden = true;
+          });
+
+          if (location.hostname.includes("-srv.")) {
+            message.textContent = `${error.message}. You opened the CAP service route directly. Open the order-to-cash-router URL so XSUAA can log you in.`;
+          } else if (location.hostname.includes("cfapps.")) {
+            message.textContent = `${error.message}. In BTP, assign your user to an O2C role collection and open the approuter URL in a new private window.`;
+          } else {
+            message.textContent = `${error.message}. Refresh and login with salesrep, manager, finance, inventory, or admin. Password: pass.`;
+          }
         }
       }());
     </script>

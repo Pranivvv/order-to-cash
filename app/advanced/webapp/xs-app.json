@@ -1,21 +1,18 @@
 {
   "welcomeFile": "/index.html",
   "authenticationMethod": "route",
-  "logout": {
-    "logoutEndpoint": "/logout",
-    "logoutPage": "/logout.html"
-  },
   "routes": [
     {
       "source": "^/api/(.*)$",
       "target": "/api/$1",
-      "destination": "srv-api",
+      "destination": "order-to-cash-srv",
       "authenticationType": "xsuaa",
       "csrfProtection": false
     },
     {
-      "source": "^/(.*)$",
-      "localDir": "../",
+      "source": "^(.*)$",
+      "target": "$1",
+      "service": "html5-apps-repo-rt",
       "authenticationType": "xsuaa"
     }
   ]

@@ -7,7 +7,22 @@
     "description": "{{appDescription}}",
     "applicationVersion": {
       "version": "1.0.0"
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "Invoice-manage": {
+          "semanticObject": "Invoice",
+          "action": "manage",
+          "title": "{{appTitle}}",
+          "subTitle": "{{appDescription}}",
+          "icon": "sap-icon://payment-approval"
+        }
+      }
     }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "o2c.order.to.cash"
   },
   "sap.ui": {
     "technology": "UI5",

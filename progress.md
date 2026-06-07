@@ -615,3 +615,51 @@ Deployment checks needed:
 - Deploy to Cloud Foundry with `cf deploy`.
 - Assign BTP users to the generated `O2C_*` role collections.
 - Open the approuter URL and verify login, role-specific app visibility, API access, and `/logout`.
+
+## Phase 22 - SAP Shell Readiness Metadata
+
+Status: Complete
+
+Completed:
+- Reworded the standalone cockpit for production use instead of local-only wording.
+- Kept local mock-user guidance only when running on `localhost`.
+- Added SAP Launchpad/Work Zone cross-navigation inbounds for:
+  - Sales Orders: `SalesOrder-manage`
+  - Advanced Draft Orders: `SalesOrder-create`
+  - Finance: `Invoice-manage`
+  - Inventory: `Inventory-manage`
+  - Analytics: `O2CAnalytics-display`
+- Preserved the existing standalone approuter links and role-aware card hiding.
+
+Verified:
+- All updated app manifests parse as valid JSON.
+- Cockpit content check passes.
+- `npx cds compile srv --to csn` passes.
+
+Next:
+- Build and deploy the MTAR in BTP, then expose the HTML5 apps in SAP Build Work Zone.
+
+## Phase 23 - HTML5 Apps Repository And SAP Shell Deployment
+
+Status: Complete
+
+Completed:
+- Added HTML5 Apps Repository host/runtime resources to `mta.yaml`.
+- Added Destination service and destination content for Work Zone/HTML5 runtime access.
+- Added HTML5 app deployer module for the Sales Orders, Finance, Inventory, Analytics, and Advanced UI apps.
+- Added individual HTML5 modules for each UI app so they can be uploaded as shell-ready app content.
+- Added `sap.cloud` metadata to each UI manifest with service `o2c.order.to.cash`.
+- Added per-app `xs-app.json` files under each `webapp` folder so shell-hosted apps can route `/api/o2c` calls to the CAP service destination.
+- Added `@ui5/cli` to the Inventory app build dependencies so all HTML5 app modules can run `ui5 build`.
+- Removed the old tracked `app/router` files after moving the active standalone approuter module to `app/`.
+- Added `.mtaignore` to keep generated folders and obsolete router output out of MTAR packaging.
+
+Verified:
+- All updated manifests and `xs-app.json` files parse as valid JSON.
+- `npx cds compile srv --to csn` passes.
+
+Deployment checks needed:
+- Run `mbt build` in the BTP dev space.
+- Deploy with `cf deploy mta_archives/order-to-cash_1.0.0.mtar`.
+- Confirm the HTML5 apps are visible in SAP Build Work Zone / SAP shell content administration.
+- Assign the existing O2C role collections to users before opening role-protected apps.

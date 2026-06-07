@@ -5,5 +5,7 @@
   "scripts": {
     "start": "ui5 serve --open index.html"
   },
-  "dependencies": {}
+  "devDependencies": {
+    "@ui5/cli": "^4"
+  }
 }

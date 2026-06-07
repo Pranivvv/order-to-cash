@@ -8,6 +8,17 @@
     "applicationVersion": {
       "version": "1.0.0"
     },
+    "crossNavigation": {
+      "inbounds": {
+        "O2CAnalytics-display": {
+          "semanticObject": "O2CAnalytics",
+          "action": "display",
+          "title": "{{appTitle}}",
+          "subTitle": "{{appDescription}}",
+          "icon": "sap-icon://business-objects-experience"
+        }
+      }
+    },
     "dataSources": {
       "mainService": {
         "uri": "/api/o2c/",
@@ -17,6 +28,10 @@
         }
       }
     }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "o2c.order.to.cash"
   },
   "sap.ui": {
     "technology": "UI5",
